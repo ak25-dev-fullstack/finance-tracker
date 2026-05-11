@@ -1,53 +1,68 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
-import { Platform } from 'react-native';
-
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-
 export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-  },
+  light: { text: '#F8FAFC', background: '#0F172A', tint: '#0d9488', icon: '#94A3B8', tabIconDefault: '#64748B', tabIconSelected: '#6bd8cb' },
+  dark: { text: '#F8FAFC', background: '#0F172A', tint: '#0d9488', icon: '#94A3B8', tabIconDefault: '#64748B', tabIconSelected: '#6bd8cb' },
 };
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+export const C = {
+  bg: '#0F172A',
+  card: '#1E293B',
+  cardHigh: '#263446',
+  border: '#334155',
+  borderLight: '#1E293B',
+  textPrimary: '#F8FAFC',
+  textSecondary: '#94A3B8',
+  textMuted: '#64748B',
+  brand: '#0d9488',
+  brandLight: '#6bd8cb',
+  brandBg: 'rgba(13,148,136,0.15)',
+  brandBorder: 'rgba(107,216,203,0.3)',
+  income: '#22C55E',
+  incomeBg: 'rgba(34,197,94,0.12)',
+  incomeBorder: 'rgba(34,197,94,0.3)',
+  incomeText: '#4ADE80',
+  expense: '#EF4444',
+  expenseBg: 'rgba(239,68,68,0.12)',
+  expenseBorder: 'rgba(239,68,68,0.3)',
+  expenseText: '#F87171',
+  balance: '#6bd8cb',
+  balanceBg: 'rgba(107,216,203,0.12)',
+  balanceBorder: 'rgba(107,216,203,0.3)',
+  warning: '#F59E0B',
+  warningBg: 'rgba(245,158,11,0.12)',
+  warningBorder: 'rgba(245,158,11,0.3)',
+  destructive: '#EF4444',
+  destructiveLight: 'rgba(239,68,68,0.12)',
+};
+
+export const CATEGORY_COLORS: Record<string, string> = {
+  Groceries:           '#FF7043',
+  'Eating Out':        '#EF5350',
+  Transport:           '#42A5F5',
+  Shopping:            '#AB47BC',
+  Entertainment:       '#FFCA28',
+  'Bills & Utilities': '#26C6DA',
+  Health:              '#66BB6A',
+  'Personal Care':     '#EC407A',
+  Education:           '#5C6BC0',
+  Subscriptions:       '#7E57C2',
+  Transfers:           '#78909C',
+  Income:              '#26A69A',
+  Other:               '#607D8B',
+};
+
+const FALLBACK_PALETTE = [
+  '#F44336','#E91E63','#9C27B0','#673AB7','#3F51B5',
+  '#2196F3','#03A9F4','#00BCD4','#009688','#4CAF50',
+  '#8BC34A','#CDDC39','#FFC107','#FF9800','#FF5722',
+  '#795548','#9E9E9E','#607D8B','#E64A19','#1565C0',
+];
+
+function djb2(str: string): number {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) + h) + str.charCodeAt(i);
+  return Math.abs(h);
+}
+
+export function getCategoryColor(category: string): string {
+  return CATEGORY_COLORS[category] ?? FALLBACK_PALETTE[djb2(category) % FALLBACK_PALETTE.length];
+}
