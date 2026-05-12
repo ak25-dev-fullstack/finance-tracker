@@ -52,6 +52,15 @@ export default function Register() {
   const [otpLoading, setOtpLoading] = useState(false);
   const otpRef = useRef<TextInput>(null);
 
+  const fillDemoInfo = () => {
+    setFirstName('Alex');
+    setLastName('Johnson');
+    setDob('14 / 03 / 1990');
+    setEmail('alex.johnson@example.com');
+    setPhone('+44 7700 900123');
+    setNationality('British');
+  };
+
   const goNext = () => setStep((s) => s + 1);
 
   const goBack = () => {
@@ -125,6 +134,11 @@ export default function Register() {
     <View>
       <Text style={s.stepTitle}>Personal Details</Text>
       <Text style={s.stepSubtitle}>We need some basic information to set up your account.</Text>
+
+      <TouchableOpacity style={s.demoFillBtn} onPress={fillDemoInfo}>
+        <Ionicons name="flash-outline" size={15} color={C.brand} style={{ marginRight: 6 }} />
+        <Text style={s.demoFillBtnText}>Fill in demo info</Text>
+      </TouchableOpacity>
 
       <View style={s.row}>
         <View style={[s.fieldWrap, { flex: 1, marginRight: 8 }]}>
@@ -720,6 +734,14 @@ const s = StyleSheet.create({
     marginTop: 4,
   },
   infoText: { fontSize: 12, color: C.textSecondary, flex: 1, lineHeight: 17 },
+
+  demoFillBtn: {
+    flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start',
+    backgroundColor: C.brandBg, borderRadius: 10,
+    borderWidth: 1, borderColor: C.brandBorder,
+    paddingVertical: 8, paddingHorizontal: 14, marginBottom: 20,
+  },
+  demoFillBtnText: { fontSize: 13, fontWeight: '600', color: C.brand },
 
   primaryBtn: {
     backgroundColor: C.brand, padding: 15, borderRadius: 14,
