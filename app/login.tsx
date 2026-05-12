@@ -123,16 +123,13 @@ export default function Login() {
               }
             </TouchableOpacity>
 
-            {/* Demo credentials hint */}
-            <View style={s.demoHint}>
-              <Ionicons name="information-circle-outline" size={14} color={C.textMuted} style={{ marginRight: 6 }} />
-              <Text style={s.demoHintText}>
-                Demo login — username:{' '}
-                <Text style={s.demoValue}>customer</Text>
-                {'  '}password:{' '}
-                <Text style={s.demoValue}>customer123</Text>
-              </Text>
-            </View>
+            <TouchableOpacity
+              style={s.demoBtn}
+              onPress={() => { setUsername('customer'); setPassword('customer123'); setUsernameError(''); setPasswordError(''); }}
+            >
+              <Ionicons name="flash-outline" size={15} color={C.brand} style={{ marginRight: 6 }} />
+              <Text style={s.demoBtnText}>Fill in demo info</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Register CTA */}
@@ -171,14 +168,13 @@ const s = StyleSheet.create({
   loginBtn: { backgroundColor: C.brand, padding: 15, borderRadius: 14, alignItems: 'center', marginTop: 4 },
   loginBtnText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 
-  demoHint: {
-    flexDirection: 'row', alignItems: 'flex-start',
-    backgroundColor: C.bg, borderRadius: 10,
-    borderWidth: 1, borderColor: C.border,
-    padding: 12, marginTop: 14,
+  demoBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: C.brandBg, borderRadius: 10,
+    borderWidth: 1, borderColor: C.brandBorder,
+    paddingVertical: 10, marginTop: 14,
   },
-  demoHintText: { fontSize: 12, color: C.textMuted, flex: 1, lineHeight: 17 },
-  demoValue: { color: C.brandLight, fontWeight: '600' },
+  demoBtnText: { fontSize: 13, fontWeight: '600', color: C.brand },
 
   registerWrap: { alignItems: 'center', marginTop: 24, gap: 10 },
   registerPrompt: { fontSize: 13, color: C.textMuted },
