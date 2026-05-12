@@ -3,14 +3,14 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
-  SafeAreaView,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/auth';
@@ -101,9 +101,9 @@ export default function Login() {
                 onSubmitEditing={handleLogin}
                 editable={!loading}
               />
-              <TouchableOpacity onPress={() => setShowPassword((v) => !v)} style={s.eyeBtn}>
+              <Pressable onPress={() => setShowPassword((v) => !v)} style={s.eyeBtn}>
                 <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={18} color={C.textMuted} />
-              </TouchableOpacity>
+              </Pressable>
             </View>
             {!!passwordError && (
               <View style={s.errorRow}>
@@ -112,7 +112,7 @@ export default function Login() {
               </View>
             )}
 
-            <TouchableOpacity
+            <Pressable
               style={[s.loginBtn, loading && { opacity: 0.6 }]}
               onPress={handleLogin}
               disabled={loading}
@@ -121,24 +121,24 @@ export default function Login() {
                 ? <ActivityIndicator color="#fff" />
                 : <Text style={s.loginBtnText}>Sign In</Text>
               }
-            </TouchableOpacity>
+            </Pressable>
 
-            <TouchableOpacity
+            <Pressable
               style={s.demoBtn}
               onPress={() => { setUsername('customer'); setPassword('customer123'); setUsernameError(''); setPasswordError(''); }}
             >
               <Ionicons name="flash-outline" size={15} color={C.brand} style={{ marginRight: 6 }} />
               <Text style={s.demoBtnText}>Fill in demo info</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           {/* Register CTA */}
           <View style={s.registerWrap}>
             <Text style={s.registerPrompt}>Don't have an account?</Text>
-            <TouchableOpacity style={s.registerBtn} onPress={() => router.push('/register')}>
+            <Pressable style={s.registerBtn} onPress={() => router.push('/register')}>
               <Ionicons name="person-add-outline" size={17} color={C.brand} style={{ marginRight: 6 }} />
               <Text style={s.registerBtnText}>Create Account</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -3,13 +3,13 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system/next';
@@ -207,7 +207,7 @@ export default function Import() {
 
         {step === 'idle' && (
           <>
-            <TouchableOpacity style={s.uploadZone} onPress={handlePickFile}>
+            <Pressable style={s.uploadZone} onPress={handlePickFile}>
               <View style={s.uploadIconWrap}>
                 <Ionicons name="cloud-upload-outline" size={36} color={C.brandLight} />
               </View>
@@ -216,7 +216,7 @@ export default function Import() {
               <View style={s.uploadBadge}>
                 <Text style={s.uploadBadgeText}>Browse Files</Text>
               </View>
-            </TouchableOpacity>
+            </Pressable>
 
             {batches.length > 0 && (
               <View style={s.card}>
@@ -235,9 +235,9 @@ export default function Import() {
                         </Text>
                       </View>
                       {!removed && (
-                        <TouchableOpacity onPress={() => handleDeleteBatch(b)}>
+                        <Pressable onPress={() => handleDeleteBatch(b)}>
                           <Ionicons name="trash-outline" size={18} color={C.expense} />
-                        </TouchableOpacity>
+                        </Pressable>
                       )}
                     </View>
                   );
@@ -300,13 +300,13 @@ export default function Import() {
               </View>
             )}
 
-            <TouchableOpacity style={s.primaryBtn} onPress={handleCategorize}>
+            <Pressable style={s.primaryBtn} onPress={handleCategorize}>
               <Ionicons name="sparkles-outline" size={18} color="#fff" />
               <Text style={s.primaryBtnText}>Categorize with AI</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={s.ghostBtn} onPress={reset}>
+            </Pressable>
+            <Pressable style={s.ghostBtn} onPress={reset}>
               <Text style={s.ghostBtnText}>Choose a different file</Text>
-            </TouchableOpacity>
+            </Pressable>
           </>
         )}
 
@@ -320,7 +320,7 @@ export default function Import() {
 
         {step === 'review' && (
           <>
-            <TouchableOpacity style={s.sectionToggle} onPress={() => setExpandAuto((v) => !v)}>
+            <Pressable style={s.sectionToggle} onPress={() => setExpandAuto((v) => !v)}>
               <View style={s.sectionLeft}>
                 <View style={[s.badge, { backgroundColor: C.incomeBg, borderColor: C.incomeBorder }]}>
                   <Text style={[s.badgeText, { color: C.income }]}>{autoResults.length}</Text>
@@ -328,7 +328,7 @@ export default function Import() {
                 <Text style={s.sectionTitle}>Auto-categorized</Text>
               </View>
               <Ionicons name={expandAuto ? 'chevron-up' : 'chevron-down'} size={16} color={C.textMuted} />
-            </TouchableOpacity>
+            </Pressable>
 
             {expandAuto && autoResults.map((r) => {
               const row = parsed.find((p) => p.id === r.id)!;
@@ -400,13 +400,13 @@ export default function Import() {
                       <Text style={s.reviewPrompt}>What is this?</Text>
                       <View style={s.pills}>
                         {CATEGORIES.filter((c) => c !== 'Other').map((cat) => (
-                          <TouchableOpacity
+                          <Pressable
                             key={cat}
                             style={[s.pill, !isCustomActive && chosen === cat && s.pillActive]}
                             onPress={() => setGroupChoice(description, cat)}
                           >
                             <Text style={[s.pillText, !isCustomActive && chosen === cat && s.pillTextActive]}>{cat}</Text>
-                          </TouchableOpacity>
+                          </Pressable>
                         ))}
                       </View>
                       <TextInput
@@ -422,13 +422,13 @@ export default function Import() {
               </>
             )}
 
-            <TouchableOpacity style={s.saveBtn} onPress={handleSave}>
+            <Pressable style={s.saveBtn} onPress={handleSave}>
               <Ionicons name="save-outline" size={18} color="#fff" />
               <Text style={s.saveBtnText}>Save {parsed.length} transactions</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={s.ghostBtn} onPress={reset}>
+            </Pressable>
+            <Pressable style={s.ghostBtn} onPress={reset}>
               <Text style={s.ghostBtnText}>Start over</Text>
-            </TouchableOpacity>
+            </Pressable>
           </>
         )}
 
@@ -446,13 +446,13 @@ export default function Import() {
             </View>
             <Text style={s.doneTitle}>{savedCount} transactions saved</Text>
             <Text style={s.doneSub}>Categories learned and stored for next time.</Text>
-            <TouchableOpacity style={s.primaryBtn} onPress={() => { reset(); router.push('/(tabs)'); }}>
+            <Pressable style={s.primaryBtn} onPress={() => { reset(); router.push('/(tabs)'); }}>
               <Ionicons name="wallet-outline" size={18} color="#fff" />
               <Text style={s.primaryBtnText}>View in Home</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[s.ghostBtn, { marginTop: 4 }]} onPress={reset}>
+            </Pressable>
+            <Pressable style={[s.ghostBtn, { marginTop: 4 }]} onPress={reset}>
               <Text style={s.ghostBtnText}>Import another file</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         )}
       </ScrollView>

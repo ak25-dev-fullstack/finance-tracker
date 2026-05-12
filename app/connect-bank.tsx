@@ -3,14 +3,14 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   ActivityIndicator,
   Alert,
   Platform,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -237,9 +237,9 @@ export default function ConnectBank() {
   return (
     <SafeAreaView style={s.container}>
       <View style={s.header}>
-        <TouchableOpacity style={s.backBtn} onPress={() => (step === 'review' ? setStep('success') : router.back())}>
+        <Pressable style={s.backBtn} onPress={() => (step === 'review' ? setStep('success') : router.back())}>
           <Ionicons name="arrow-back" size={20} color={C.textPrimary} />
-        </TouchableOpacity>
+        </Pressable>
         <Text style={s.headerTitle}>{HEADER_TITLES[step]}</Text>
         <View style={{ width: 40 }} />
       </View>
@@ -269,13 +269,13 @@ export default function ConnectBank() {
                     <Text style={[s.connectedBalance, { color: C.income }]}>£{b.balance.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</Text>
                     <View style={{ flexDirection: 'row', gap: 12 }}>
                       {bankDef && (
-                        <TouchableOpacity onPress={() => handleSync(bankDef)}>
+                        <Pressable onPress={() => handleSync(bankDef)}>
                           <Text style={[s.disconnectText, { color: b.color }]}>Sync</Text>
-                        </TouchableOpacity>
+                        </Pressable>
                       )}
-                      <TouchableOpacity onPress={() => handleDisconnect(b.id)}>
+                      <Pressable onPress={() => handleDisconnect(b.id)}>
                         <Text style={s.disconnectText}>Disconnect</Text>
-                      </TouchableOpacity>
+                      </Pressable>
                     </View>
                   </View>
                 </View>
@@ -288,13 +288,13 @@ export default function ConnectBank() {
             {BANKS.map((bank) => {
               const isConnected = connectedBanks.some((b) => b.id === bank.id);
               return (
-                <TouchableOpacity key={bank.id} style={[s.bankCard, isConnected && s.bankCardConnected]} onPress={() => !isConnected && handleSelectBank(bank)} disabled={isConnected}>
+                <Pressable key={bank.id} style={[s.bankCard, isConnected && s.bankCardConnected]} onPress={() => !isConnected && handleSelectBank(bank)} disabled={isConnected}>
                   <View style={[s.bankIcon, { backgroundColor: bank.color + '20' }]}>
                     <Ionicons name={bank.icon as any} size={26} color={bank.color} />
                   </View>
                   <Text style={s.bankName}>{bank.name}</Text>
                   <Text style={s.bankTagline} numberOfLines={1}>{isConnected ? '✓ Connected' : bank.tagline}</Text>
-                </TouchableOpacity>
+                </Pressable>
               );
             })}
           </View>
@@ -364,12 +364,12 @@ export default function ConnectBank() {
               <Text style={s.cannotText}>Cannot make payments or move money</Text>
             </View>
           </View>
-          <TouchableOpacity style={[s.primaryBtn, { backgroundColor: selectedBank.color }]} onPress={handleAuthorize}>
+          <Pressable style={[s.primaryBtn, { backgroundColor: selectedBank.color }]} onPress={handleAuthorize}>
             <Text style={s.primaryBtnText}>Authorise Access</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={s.ghostBtn} onPress={() => setStep('select')}>
+          </Pressable>
+          <Pressable style={s.ghostBtn} onPress={() => setStep('select')}>
             <Text style={s.ghostBtnText}>Cancel</Text>
-          </TouchableOpacity>
+          </Pressable>
         </ScrollView>
       )}
 
@@ -398,13 +398,13 @@ export default function ConnectBank() {
               </Text>
             </View>
           </View>
-          <TouchableOpacity style={s.primaryBtn} onPress={() => selectedBank && handleSync(selectedBank)}>
+          <Pressable style={s.primaryBtn} onPress={() => selectedBank && handleSync(selectedBank)}>
             <Ionicons name="sync-outline" size={18} color="#fff" />
             <Text style={s.primaryBtnText}>Sync Transactions</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={s.ghostBtn} onPress={() => router.back()}>
+          </Pressable>
+          <Pressable style={s.ghostBtn} onPress={() => router.back()}>
             <Text style={s.ghostBtnText}>Done for now</Text>
-          </TouchableOpacity>
+          </Pressable>
         </ScrollView>
       )}
 
@@ -421,7 +421,7 @@ export default function ConnectBank() {
       {step === 'review' && (
         <ScrollView style={s.scroll} contentContainerStyle={{ paddingBottom: 40 }}>
           {/* Auto-categorized */}
-          <TouchableOpacity style={s.sectionToggle} onPress={() => setExpandAuto((v) => !v)}>
+          <Pressable style={s.sectionToggle} onPress={() => setExpandAuto((v) => !v)}>
             <View style={s.sectionLeft}>
               <View style={[s.badge, { backgroundColor: C.incomeBg, borderColor: C.incomeBorder }]}>
                 <Text style={[s.badgeText, { color: C.income }]}>{autoResults.length}</Text>
@@ -429,7 +429,7 @@ export default function ConnectBank() {
               <Text style={s.sectionTitle}>Auto-categorised</Text>
             </View>
             <Ionicons name={expandAuto ? 'chevron-up' : 'chevron-down'} size={16} color={C.textMuted} />
-          </TouchableOpacity>
+          </Pressable>
 
           {expandAuto && autoResults.map((r) => {
             const row = parsed.find((p) => p.id === r.id)!;
@@ -502,13 +502,13 @@ export default function ConnectBank() {
                     <Text style={s.reviewPrompt}>What is this?</Text>
                     <View style={s.pills}>
                       {CATEGORIES.filter((c) => c !== 'Other').map((cat) => (
-                        <TouchableOpacity
+                        <Pressable
                           key={cat}
                           style={[s.pill, !isCustomActive && chosen === cat && s.pillActive]}
                           onPress={() => setGroupChoice(description, cat)}
                         >
                           <Text style={[s.pillText, !isCustomActive && chosen === cat && s.pillTextActive]}>{cat}</Text>
-                        </TouchableOpacity>
+                        </Pressable>
                       ))}
                     </View>
                     <TextInput
@@ -524,15 +524,15 @@ export default function ConnectBank() {
             </>
           )}
 
-          <TouchableOpacity style={[s.primaryBtn, { backgroundColor: C.income, marginTop: 16 }, saving && { opacity: 0.6 }]} onPress={handleSave} disabled={saving}>
+          <Pressable style={[s.primaryBtn, { backgroundColor: C.income, marginTop: 16 }, saving && { opacity: 0.6 }]} onPress={handleSave} disabled={saving}>
             {saving
               ? <ActivityIndicator color="#fff" size="small" />
               : <><Ionicons name="save-outline" size={18} color="#fff" /><Text style={s.primaryBtnText}>Save {parsed.length} transactions</Text></>
             }
-          </TouchableOpacity>
-          <TouchableOpacity style={s.ghostBtn} onPress={() => setStep('success')}>
+          </Pressable>
+          <Pressable style={s.ghostBtn} onPress={() => setStep('success')}>
             <Text style={s.ghostBtnText}>Start over</Text>
-          </TouchableOpacity>
+          </Pressable>
         </ScrollView>
       )}
 
@@ -544,10 +544,10 @@ export default function ConnectBank() {
             <Text style={s.successTitle}>{savedCount} transactions saved</Text>
             <Text style={s.successSub}>Categories learned and stored for next time.</Text>
           </View>
-          <TouchableOpacity style={s.primaryBtn} onPress={() => router.back()}>
+          <Pressable style={s.primaryBtn} onPress={() => router.back()}>
             <Ionicons name="wallet-outline" size={18} color="#fff" />
             <Text style={s.primaryBtnText}>Go to Home</Text>
-          </TouchableOpacity>
+          </Pressable>
         </ScrollView>
       )}
     </SafeAreaView>

@@ -3,13 +3,13 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   TextInput,
   StyleSheet,
-  SafeAreaView,
   ActivityIndicator,
   Dimensions,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { useFocusEffect } from '@react-navigation/native';
@@ -201,11 +201,11 @@ export default function Insights() {
 
         <View style={s.toggle}>
           {(['category', 'month'] as Mode[]).map((m) => (
-            <TouchableOpacity key={m} style={[s.toggleBtn, mode === m && s.toggleActive]} onPress={() => setMode(m)}>
+            <Pressable key={m} style={[s.toggleBtn, mode === m && s.toggleActive]} onPress={() => setMode(m)}>
               <Text style={[s.toggleText, mode === m && s.toggleTextActive]}>
                 {m === 'category' ? 'By Category' : 'By Month'}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
 
@@ -221,17 +221,17 @@ export default function Insights() {
               {mode === 'category' ? (
                 <>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.filterScroll} contentContainerStyle={{ paddingRight: 8 }}>
-                    <TouchableOpacity style={[s.chip, filterMode === 'all' && s.chipActive]} onPress={() => selectFilter('all')}>
+                    <Pressable style={[s.chip, filterMode === 'all' && s.chipActive]} onPress={() => selectFilter('all')}>
                       <Text style={[s.chipText, filterMode === 'all' && s.chipTextActive]}>All time</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                     {availableMonths.map((m) => (
-                      <TouchableOpacity key={m} style={[s.chip, filterMode === 'month' && selectedMonth === m && s.chipActive]} onPress={() => selectFilter('month', m)}>
+                      <Pressable key={m} style={[s.chip, filterMode === 'month' && selectedMonth === m && s.chipActive]} onPress={() => selectFilter('month', m)}>
                         <Text style={[s.chipText, filterMode === 'month' && selectedMonth === m && s.chipTextActive]}>{fmtMonth(m)}</Text>
-                      </TouchableOpacity>
+                      </Pressable>
                     ))}
-                    <TouchableOpacity style={[s.chip, filterMode === 'custom' && s.chipActive]} onPress={() => selectFilter('custom')}>
+                    <Pressable style={[s.chip, filterMode === 'custom' && s.chipActive]} onPress={() => selectFilter('custom')}>
                       <Text style={[s.chipText, filterMode === 'custom' && s.chipTextActive]}>Custom…</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                   </ScrollView>
 
                   {filterMode === 'custom' && (
@@ -260,31 +260,31 @@ export default function Insights() {
 
                     return (
                       <View key={d.label}>
-                        <TouchableOpacity style={s.legendRow} onPress={() => { setExpandedCategory(isExpanded ? null : d.label); if (isRenaming) setRenamingCategory(null); }} activeOpacity={0.7}>
+                        <Pressable style={s.legendRow} onPress={() => { setExpandedCategory(isExpanded ? null : d.label); if (isRenaming) setRenamingCategory(null); }} activeOpacity={0.7}>
                           <View style={[s.dot, { backgroundColor: d.color }]} />
                           <Text style={s.legendLabel}>{d.label}</Text>
                           <Text style={s.legendAmt}>£{d.value.toFixed(2)}</Text>
                           <Text style={s.legendPct}>{totalFiltered > 0 ? ((d.value / totalFiltered) * 100).toFixed(0) : 0}%</Text>
                           <Ionicons name={isExpanded ? 'chevron-up' : 'chevron-down'} size={14} color={C.textMuted} />
-                        </TouchableOpacity>
+                        </Pressable>
 
                         {isExpanded && (
                           <View style={s.expandedSection}>
                             {isRenaming ? (
                               <View style={s.renameRow}>
                                 <TextInput style={s.renameInput} value={renameInput} onChangeText={setRenameInput} autoFocus selectTextOnFocus returnKeyType="done" onSubmitEditing={handleRename} />
-                                <TouchableOpacity style={[s.renameBtn, s.renameSave]} onPress={handleRename} disabled={renameSaving}>
+                                <Pressable style={[s.renameBtn, s.renameSave]} onPress={handleRename} disabled={renameSaving}>
                                   {renameSaving ? <ActivityIndicator color="#fff" size="small" /> : <Text style={s.renameBtnText}>Save</Text>}
-                                </TouchableOpacity>
-                                <TouchableOpacity style={[s.renameBtn, s.renameCancel]} onPress={() => setRenamingCategory(null)} disabled={renameSaving}>
+                                </Pressable>
+                                <Pressable style={[s.renameBtn, s.renameCancel]} onPress={() => setRenamingCategory(null)} disabled={renameSaving}>
                                   <Text style={[s.renameBtnText, { color: C.textSecondary }]}>Cancel</Text>
-                                </TouchableOpacity>
+                                </Pressable>
                               </View>
                             ) : (
-                              <TouchableOpacity style={s.renameTrigger} onPress={() => { setRenamingCategory(d.label); setRenameInput(d.label); }}>
+                              <Pressable style={s.renameTrigger} onPress={() => { setRenamingCategory(d.label); setRenameInput(d.label); }}>
                                 <Ionicons name="pencil-outline" size={13} color={C.brandLight} />
                                 <Text style={s.renameTriggerText}> Rename category</Text>
-                              </TouchableOpacity>
+                              </Pressable>
                             )}
                             {catTxs.map((t) => (
                               <View key={t.id} style={s.txRow}>
@@ -334,12 +334,12 @@ export default function Insights() {
                   <Text style={s.errorText}> {insightsError}</Text>
                 </View>
               ) : null}
-              <TouchableOpacity style={[s.insightsBtn, loadingInsights && { opacity: 0.6 }]} onPress={handleGenerateInsights} disabled={loadingInsights}>
+              <Pressable style={[s.insightsBtn, loadingInsights && { opacity: 0.6 }]} onPress={handleGenerateInsights} disabled={loadingInsights}>
                 {loadingInsights
                   ? <ActivityIndicator color="#fff" size="small" />
                   : <><Ionicons name="sparkles-outline" size={16} color="#fff" /><Text style={s.insightsBtnText}> {insights ? 'Regenerate' : 'Generate AI Insights'}</Text></>
                 }
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </>
         )}

@@ -3,12 +3,12 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { appendTransactions } from '@/services/storage';
@@ -73,7 +73,7 @@ export default function AddTransaction() {
         {/* Type toggle */}
         <View style={s.typeRow}>
           {(['expense', 'income'] as const).map((t) => (
-            <TouchableOpacity
+            <Pressable
               key={t}
               style={[s.typeBtn, type === t && (t === 'expense' ? s.typeBtnExpense : s.typeBtnIncome)]}
               onPress={() => { setType(t); setCategory(''); }}
@@ -86,7 +86,7 @@ export default function AddTransaction() {
               <Text style={[s.typeBtnText, type === t && { color: t === 'expense' ? C.expenseText : C.income, fontWeight: '700' }]}>
                 {t === 'expense' ? 'Expense' : 'Income'}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
 
@@ -134,13 +134,13 @@ export default function AddTransaction() {
         {!!errors.category && <Text style={s.errorText}>{errors.category}</Text>}
         <View style={s.quickRow}>
           {quickCategories.map((cat) => (
-            <TouchableOpacity
+            <Pressable
               key={cat}
               style={[s.quickPill, category === cat && s.quickPillActive]}
               onPress={() => { setCategory(cat); clearError('category'); }}
             >
               <Text style={[s.quickPillText, category === cat && s.quickPillTextActive]}>{cat}</Text>
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
 
@@ -161,7 +161,7 @@ export default function AddTransaction() {
         {!!errors.date && <Text style={s.errorText}>{errors.date}</Text>}
 
         {/* Submit */}
-        <TouchableOpacity
+        <Pressable
           style={[s.submitBtn, { backgroundColor: isExpense ? C.expense : C.income }, loading && { opacity: 0.6 }]}
           onPress={handleSubmit}
           disabled={loading}
@@ -175,11 +175,11 @@ export default function AddTransaction() {
                 </Text>
               </>
           }
-        </TouchableOpacity>
+        </Pressable>
 
-        <TouchableOpacity style={s.cancelBtn} onPress={() => router.back()} disabled={loading}>
+        <Pressable style={s.cancelBtn} onPress={() => router.back()} disabled={loading}>
           <Text style={s.cancelBtnText}>Cancel</Text>
-        </TouchableOpacity>
+        </Pressable>
 
       </ScrollView>
     </SafeAreaView>

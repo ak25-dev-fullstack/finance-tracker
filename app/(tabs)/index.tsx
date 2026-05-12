@@ -3,9 +3,8 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
-  SafeAreaView,
   RefreshControl,
   Modal,
   TextInput,
@@ -13,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -218,15 +218,15 @@ export default function Index() {
               <Text style={s.subGreeting}>{user?.name ?? 'Personal Account'}</Text>
             </View>
             <View style={s.headerActions}>
-              <TouchableOpacity
+              <Pressable
                 style={s.avatarBtn}
                 onPress={() => router.push('/profile')}
               >
                 <Ionicons name="person" size={18} color={C.brandLight} />
-              </TouchableOpacity>
-              <TouchableOpacity style={s.logoutBtn} onPress={() => logout()}>
+              </Pressable>
+              <Pressable style={s.logoutBtn} onPress={() => logout()}>
                 <Ionicons name="log-out-outline" size={20} color={C.expense} />
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
 
@@ -278,12 +278,12 @@ export default function Index() {
               { icon: 'bar-chart-outline', label: 'Insights', action: () => router.push('/(tabs)/insights') },
               { icon: 'chatbubble-ellipses-outline', label: 'AI Chat', action: () => setShowAgent(true) },
             ].map((item) => (
-              <TouchableOpacity key={item.label} style={s.actionBtn} onPress={item.action}>
+              <Pressable key={item.label} style={s.actionBtn} onPress={item.action}>
                 <View style={s.actionIcon}>
                   <Ionicons name={item.icon as any} size={22} color={C.brandLight} />
                 </View>
                 <Text style={s.actionLabel}>{item.label}</Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
 
@@ -291,12 +291,12 @@ export default function Index() {
           <View style={s.section}>
             <View style={s.sectionHeader}>
               <Text style={s.sectionTitle}>Connected Accounts</Text>
-              <TouchableOpacity onPress={() => router.push('/connect-bank')}>
+              <Pressable onPress={() => router.push('/connect-bank')}>
                 <Text style={s.viewAll}>{connectedBanks.length > 0 ? 'Manage' : 'Connect'}</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
             {connectedBanks.length === 0 ? (
-              <TouchableOpacity style={s.connectBankBtn} onPress={() => router.push('/connect-bank')}>
+              <Pressable style={s.connectBankBtn} onPress={() => router.push('/connect-bank')}>
                 <View style={s.connectBankIcon}>
                   <Ionicons name="link-outline" size={20} color={C.brandLight} />
                 </View>
@@ -305,7 +305,7 @@ export default function Index() {
                   <Text style={s.connectBankSub}>Link an account to sync transactions automatically</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={16} color={C.textMuted} />
-              </TouchableOpacity>
+              </Pressable>
             ) : (
               connectedBanks.map((b) => (
                 <View key={b.id} style={s.bankRow}>
@@ -329,9 +329,9 @@ export default function Index() {
             <View style={s.sectionHeader}>
               <Text style={s.sectionTitle}>Recent Transactions</Text>
               {transactions.length > 5 && (
-                <TouchableOpacity onPress={() => router.push('/(tabs)/insights')}>
+                <Pressable onPress={() => router.push('/(tabs)/insights')}>
                   <Text style={s.viewAll}>View all</Text>
-                </TouchableOpacity>
+                </Pressable>
               )}
             </View>
 
@@ -340,13 +340,13 @@ export default function Index() {
                 <Ionicons name="receipt-outline" size={44} color={C.textMuted} />
                 <Text style={s.emptyTitle}>No transactions yet</Text>
                 <Text style={s.emptySub}>Add one manually or import from your bank</Text>
-                <TouchableOpacity style={s.emptyBtn} onPress={() => router.push('/add-transaction')}>
+                <Pressable style={s.emptyBtn} onPress={() => router.push('/add-transaction')}>
                   <Text style={s.emptyBtnText}>Add Transaction</Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
             ) : (
               recent.map((t) => (
-                <TouchableOpacity key={t.id} style={s.txRow} onPress={() => openEdit(t)}>
+                <Pressable key={t.id} style={s.txRow} onPress={() => openEdit(t)}>
                   <View style={[s.txIcon, { backgroundColor: catColor(t.category) + '22' }]}>
                     <Text style={[s.txIconLetter, { color: catColor(t.category) }]}>
                       {t.category.charAt(0).toUpperCase()}
@@ -359,7 +359,7 @@ export default function Index() {
                   <Text style={[s.txAmount, { color: t.type === 'income' ? C.income : C.expense }]}>
                     {t.type === 'income' ? '+' : '−'}£{t.amount.toFixed(2)}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               ))
             )}
           </View>
@@ -373,18 +373,18 @@ export default function Index() {
             <Text style={s.insightText}>
               Connect with a Financial Adviser in the Advisor tab for personalised wealth management and portfolio analysis.
             </Text>
-            <TouchableOpacity style={s.insightBtn} onPress={() => router.push('/(tabs)/advisor')}>
+            <Pressable style={s.insightBtn} onPress={() => router.push('/(tabs)/advisor')}>
               <Text style={s.insightBtnText}>Connect to Advisor</Text>
               <Ionicons name="arrow-forward" size={14} color={C.brandLight} />
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
 
       {/* AI Agent Modal */}
       <Modal visible={showAgent} animationType="slide" transparent onRequestClose={() => setShowAgent(false)}>
-        <TouchableOpacity style={s.overlay} activeOpacity={1} onPress={() => setShowAgent(false)}>
-          <TouchableOpacity activeOpacity={1} style={s.sheet}>
+        <Pressable style={s.overlay} activeOpacity={1} onPress={() => setShowAgent(false)}>
+          <Pressable activeOpacity={1} style={s.sheet}>
             <View style={s.handle} />
             <Text style={s.sheetTitle}>AI Assistant</Text>
             <Text style={s.sheetSub}>Ask me to rename or organise your transactions</Text>
@@ -399,7 +399,7 @@ export default function Index() {
                 onSubmitEditing={handleAgentCommand}
                 editable={!agentLoading}
               />
-              <TouchableOpacity
+              <Pressable
                 style={[s.agentSend, (!agentInput.trim() || agentLoading) && { opacity: 0.4 }]}
                 onPress={handleAgentCommand}
                 disabled={agentLoading || !agentInput.trim()}
@@ -408,7 +408,7 @@ export default function Index() {
                   ? <ActivityIndicator color="#fff" size="small" />
                   : <Ionicons name="send" size={18} color="#fff" />
                 }
-              </TouchableOpacity>
+              </Pressable>
             </View>
             {agentResult && (
               <View style={[s.agentResult, agentResult.ok ? s.agentResultOk : s.agentResultErr]}>
@@ -418,14 +418,14 @@ export default function Index() {
                 </Text>
               </View>
             )}
-          </TouchableOpacity>
-        </TouchableOpacity>
+          </Pressable>
+        </Pressable>
       </Modal>
 
       {/* Edit Transaction Modal */}
       <Modal visible={!!editing} animationType="slide" transparent onRequestClose={() => setEditing(null)}>
-        <TouchableOpacity style={s.overlay} activeOpacity={1} onPress={() => setEditing(null)}>
-          <TouchableOpacity activeOpacity={1} style={s.sheet}>
+        <Pressable style={s.overlay} activeOpacity={1} onPress={() => setEditing(null)}>
+          <Pressable activeOpacity={1} style={s.sheet}>
             <View style={s.handle} />
             <View style={s.sheetTop}>
               <View style={{ flex: 1 }}>
@@ -451,13 +451,13 @@ export default function Index() {
             <Text style={s.sheetLabel}>Category</Text>
             <View style={s.pills}>
               {CATEGORIES.filter((c) => c !== 'Other').map((cat) => (
-                <TouchableOpacity
+                <Pressable
                   key={cat}
                   style={[s.pill, !isCustomActive && activeCategory === cat && s.pillActive]}
                   onPress={() => { setEditCategory(cat); setCustomCategory(''); }}
                 >
                   <Text style={[s.pillText, !isCustomActive && activeCategory === cat && s.pillTextActive]}>{cat}</Text>
-                </TouchableOpacity>
+                </Pressable>
               ))}
             </View>
             <TextInput
@@ -469,19 +469,19 @@ export default function Index() {
             />
 
             {/* Category colour */}
-            <TouchableOpacity style={s.colorRow} onPress={() => setShowColorPicker((v) => !v)}>
+            <Pressable style={s.colorRow} onPress={() => setShowColorPicker((v) => !v)}>
               <View style={[s.colorDot, { backgroundColor: catColor(activeCategory) }]} />
               <Text style={s.colorRowLabel}>Category colour</Text>
               <Ionicons name={showColorPicker ? 'chevron-up' : 'chevron-down'} size={14} color={C.textMuted} />
-            </TouchableOpacity>
+            </Pressable>
             {showColorPicker && (
               <View style={s.colorGrid}>
                 {COLOR_PALETTE.map((col) => {
                   const selected = catColor(activeCategory) === col;
                   return (
-                    <TouchableOpacity key={col} onPress={() => handlePickColor(col)} style={[s.colorSwatch, { backgroundColor: col }, selected && s.colorSwatchSelected]}>
+                    <Pressable key={col} onPress={() => handlePickColor(col)} style={[s.colorSwatch, { backgroundColor: col }, selected && s.colorSwatchSelected]}>
                       {selected && <Ionicons name="checkmark" size={14} color="#fff" />}
-                    </TouchableOpacity>
+                    </Pressable>
                   );
                 })}
               </View>
@@ -489,12 +489,12 @@ export default function Index() {
 
             {/* Save scope — single vs all */}
             <View style={s.saveScopeRow}>
-              <TouchableOpacity style={s.saveScopeBtn} onPress={handleSaveEdit}>
+              <Pressable style={s.saveScopeBtn} onPress={handleSaveEdit}>
                 <Ionicons name="bookmark-outline" size={15} color={C.brand} style={{ marginBottom: 4 }} />
                 <Text style={s.saveScopeBtnText}>This transaction</Text>
                 <Text style={s.saveScopeBtnSub}>only this one</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </Pressable>
+              <Pressable
                 style={[s.saveScopeBtn, matchCount > 1 ? s.saveScopeBtnAll : s.saveScopeBtnDisabled]}
                 onPress={handleSaveAll}
                 disabled={matchCount <= 1}
@@ -506,32 +506,32 @@ export default function Index() {
                 <Text style={[s.saveScopeBtnSub, matchCount <= 1 && { color: C.textMuted }]}>
                   {matchCount} transaction{matchCount !== 1 ? 's' : ''}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
 
             {!confirmDelete ? (
-              <TouchableOpacity style={s.deleteBtn} onPress={() => setConfirmDelete(true)}>
+              <Pressable style={s.deleteBtn} onPress={() => setConfirmDelete(true)}>
                 <Ionicons name="trash-outline" size={15} color={C.destructive} style={{ marginRight: 6 }} />
                 <Text style={s.deleteBtnText}>Delete Transaction</Text>
-              </TouchableOpacity>
+              </Pressable>
             ) : (
               <View style={s.deleteConfirmRow}>
                 <Text style={s.deleteConfirmText}>Remove this transaction?</Text>
                 <View style={s.deleteConfirmBtns}>
-                  <TouchableOpacity style={s.deleteCancelBtn} onPress={() => setConfirmDelete(false)}>
+                  <Pressable style={s.deleteCancelBtn} onPress={() => setConfirmDelete(false)}>
                     <Text style={s.deleteCancelText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={s.deleteConfirmBtn} onPress={handleDelete} disabled={deleting}>
+                  </Pressable>
+                  <Pressable style={s.deleteConfirmBtn} onPress={handleDelete} disabled={deleting}>
                     {deleting
                       ? <ActivityIndicator size="small" color="#fff" />
                       : <Text style={s.deleteConfirmBtnText}>Delete</Text>
                     }
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               </View>
             )}
-          </TouchableOpacity>
-        </TouchableOpacity>
+          </Pressable>
+        </Pressable>
       </Modal>
     </SafeAreaView>
   );

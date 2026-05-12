@@ -2,13 +2,13 @@ import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Alert,
   Share,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useNavigation } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -63,9 +63,14 @@ export default function Profile() {
         {
           text: 'Clear data', style: 'destructive',
           onPress: async () => {
-            await clearAllData();
-            setTxCount(0);
-            setBatchCount(0);
+            try {
+              await clearAllData();
+              setTxCount(0);
+              setBatchCount(0);
+            } catch {
+              Alert.alert('Error', 'Could not clear data. Please try again.');
+              return;
+            }
             Alert.alert('Done', 'All local data has been cleared.');
           },
         },
@@ -78,8 +83,8 @@ export default function Profile() {
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Sign out', style: 'destructive',
-        onPress: async () => {
-          await logout();
+        onPress: () => {
+          logout();
           router.replace('/login');
         },
       },
@@ -90,9 +95,9 @@ export default function Profile() {
     <SafeAreaView style={s.container}>
       {/* Header bar */}
       <View style={s.header}>
-        <TouchableOpacity onPress={() => navigation.canGoBack() ? navigation.goBack() : router.replace('/(tabs)')} style={s.backBtn}>
+        <Pressable onPress={() => navigation.canGoBack() ? navigation.goBack() : router.replace('/(tabs)')} style={s.backBtn}>
           <Ionicons name="arrow-back" size={22} color={C.textPrimary} />
-        </TouchableOpacity>
+        </Pressable>
         <Text style={s.headerTitle}>Account</Text>
         <View style={{ width: 40 }} />
       </View>
@@ -177,20 +182,20 @@ export default function Profile() {
           </Text>
         </View>
 
-        {/* Delete data */}
-        <TouchableOpacity style={s.deleteDataBtn} onPress={handleClearData}>
-          <Ionicons name="trash-outline" size={18} color={C.destructive} style={{ marginRight: 10 }} />
-          <Text style={s.deleteDataText}>Delete All Data</Text>
-        </TouchableOpacity>
-
-        {/* Sign out */}
-        <TouchableOpacity style={s.signOutBtn} onPress={handleSignOut}>
-          <Ionicons name="log-out-outline" size={18} color={C.destructive} style={{ marginRight: 10 }} />
-          <Text style={s.signOutText}>Sign Out</Text>
-        </TouchableOpacity>
-
         <Text style={s.versionText}>DWK Finance · v1.0.0</Text>
       </ScrollView>
+
+      <View style={s.bottomActions}>
+        <Pressable style={s.deleteDataBtn} onPress={handleClearData}>
+          <Ionicons name="trash-outline" size={18} color={C.destructive} style={{ marginRight: 10 }} />
+          <Text style={s.deleteDataText}>Delete All Data</Text>
+        </Pressable>
+
+        <Pressable style={s.signOutBtn} onPress={handleSignOut}>
+          <Ionicons name="log-out-outline" size={18} color={C.destructive} style={{ marginRight: 10 }} />
+          <Text style={s.signOutText}>Sign Out</Text>
+        </Pressable>
+      </View>
     </SafeAreaView>
   );
 }
@@ -217,13 +222,13 @@ function ActionRow({
   icon: any; label: string; onPress: () => void; destructive?: boolean; last?: boolean;
 }) {
   return (
-    <TouchableOpacity style={[s.row, !last && s.rowBorder]} onPress={onPress}>
+    <Pressable style={[s.row, !last && s.rowBorder]} onPress={onPress}>
       <View style={s.rowIcon}>
         <Ionicons name={icon} size={17} color={destructive ? C.destructive : C.brandLight} />
       </View>
       <Text style={[s.rowLabel, destructive && { color: C.destructive }]}>{label}</Text>
       <Ionicons name="chevron-forward" size={14} color={C.textMuted} />
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
@@ -237,7 +242,7 @@ const s = StyleSheet.create({
   backBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '600', color: C.textPrimary },
 
-  scroll: { paddingHorizontal: 20, paddingBottom: 48 },
+  scroll: { paddingHorizontal: 20, paddingBottom: 24 },
 
   avatarBlock: { alignItems: 'center', paddingVertical: 28 },
   avatar: {
@@ -287,6 +292,11 @@ const s = StyleSheet.create({
     padding: 14, marginBottom: 20,
   },
   fcaText: { flex: 1, fontSize: 11, color: C.textMuted, lineHeight: 16 },
+
+  bottomActions: {
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
 
   deleteDataBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',

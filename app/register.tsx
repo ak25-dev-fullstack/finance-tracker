@@ -3,9 +3,8 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -13,6 +12,7 @@ import {
   Alert,
   Animated,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
@@ -135,10 +135,10 @@ export default function Register() {
       <Text style={s.stepTitle}>Personal Details</Text>
       <Text style={s.stepSubtitle}>We need some basic information to set up your account.</Text>
 
-      <TouchableOpacity style={s.demoFillBtn} onPress={fillDemoInfo}>
+      <Pressable style={s.demoFillBtn} onPress={fillDemoInfo}>
         <Ionicons name="flash-outline" size={15} color={C.brand} style={{ marginRight: 6 }} />
         <Text style={s.demoFillBtnText}>Fill in demo info</Text>
-      </TouchableOpacity>
+      </Pressable>
 
       <View style={s.row}>
         <View style={[s.fieldWrap, { flex: 1, marginRight: 8 }]}>
@@ -220,19 +220,19 @@ export default function Register() {
           <View style={s.docUploaded}>
             <Ionicons name="document-text-outline" size={18} color={C.brandLight} />
             <Text style={s.docFileName} numberOfLines={1}>{idDoc.name}</Text>
-            <TouchableOpacity onPress={() => setIdDoc(null)}>
+            <Pressable onPress={() => setIdDoc(null)}>
               <Ionicons name="close-circle" size={18} color={C.textMuted} />
-            </TouchableOpacity>
+            </Pressable>
           </View>
         ) : (
           <View style={s.docActions}>
-            <TouchableOpacity style={s.uploadBtn} onPress={() => pickDocument(setIdDoc)}>
+            <Pressable style={s.uploadBtn} onPress={() => pickDocument(setIdDoc)}>
               <Ionicons name="cloud-upload-outline" size={17} color={C.brand} />
               <Text style={s.uploadBtnText}>Upload File</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={s.demoBtn} onPress={() => setIdDoc({ name: 'passport_scan.jpg' })}>
+            </Pressable>
+            <Pressable style={s.demoBtn} onPress={() => setIdDoc({ name: 'passport_scan.jpg' })}>
               <Text style={s.demoBtnText}>Use Demo</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         )}
       </View>
@@ -254,19 +254,19 @@ export default function Register() {
           <View style={s.docUploaded}>
             <Ionicons name="document-text-outline" size={18} color={C.brandLight} />
             <Text style={s.docFileName} numberOfLines={1}>{addressDoc.name}</Text>
-            <TouchableOpacity onPress={() => setAddressDoc(null)}>
+            <Pressable onPress={() => setAddressDoc(null)}>
               <Ionicons name="close-circle" size={18} color={C.textMuted} />
-            </TouchableOpacity>
+            </Pressable>
           </View>
         ) : (
           <View style={s.docActions}>
-            <TouchableOpacity style={s.uploadBtn} onPress={() => pickDocument(setAddressDoc)}>
+            <Pressable style={s.uploadBtn} onPress={() => pickDocument(setAddressDoc)}>
               <Ionicons name="cloud-upload-outline" size={17} color={C.brand} />
               <Text style={s.uploadBtnText}>Upload File</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={s.demoBtn} onPress={() => setAddressDoc({ name: 'bank_statement.pdf' })}>
+            </Pressable>
+            <Pressable style={s.demoBtn} onPress={() => setAddressDoc({ name: 'bank_statement.pdf' })}>
               <Text style={s.demoBtnText}>Use Demo</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         )}
       </View>
@@ -349,10 +349,10 @@ export default function Register() {
         </View>
 
         {faceState === 'idle' && (
-          <TouchableOpacity style={s.scanBtn} onPress={startFaceScan}>
+          <Pressable style={s.scanBtn} onPress={startFaceScan}>
             <Ionicons name="camera-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
             <Text style={s.scanBtnText}>Start Face Scan</Text>
-          </TouchableOpacity>
+          </Pressable>
         )}
 
         {faceState === 'done' && (
@@ -381,7 +381,7 @@ export default function Register() {
           <Text style={s.otpHint}>
             A 6-digit code will be sent to your registered mobile number via SMS.
           </Text>
-          <TouchableOpacity
+          <Pressable
             style={[s.primaryBtn, otpLoading && { opacity: 0.6 }]}
             onPress={sendOtp}
             disabled={otpLoading}
@@ -393,7 +393,7 @@ export default function Register() {
                   <Text style={s.primaryBtnText}>Send Verification Code</Text>
                 </>
             }
-          </TouchableOpacity>
+          </Pressable>
         </>
       ) : (
         <>
@@ -427,20 +427,20 @@ export default function Register() {
             />
           </View>
 
-          <TouchableOpacity
+          <Pressable
             style={[s.primaryBtn, otpCode.length < 6 && { opacity: 0.4 }]}
             onPress={verifyOtp}
             disabled={otpCode.length < 6}
           >
             <Text style={s.primaryBtnText}>Verify Code</Text>
-          </TouchableOpacity>
+          </Pressable>
 
-          <TouchableOpacity style={s.resendRow} onPress={() => { setOtpCode(''); setOtpSent(false); }}>
+          <Pressable style={s.resendRow} onPress={() => { setOtpCode(''); setOtpSent(false); }}>
             <Text style={s.resendText}>
               Didn't receive it?{' '}
               <Text style={{ color: C.brandLight }}>Resend code</Text>
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </>
       )}
     </View>
@@ -488,9 +488,9 @@ export default function Register() {
         </Text>
       </View>
 
-      <TouchableOpacity style={[s.primaryBtn, { marginTop: 24 }]} onPress={() => router.replace('/login')}>
+      <Pressable style={[s.primaryBtn, { marginTop: 24 }]} onPress={() => router.replace('/login')}>
         <Text style={s.primaryBtnText}>Return to Sign In</Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 
@@ -503,9 +503,9 @@ export default function Register() {
         {/* Header */}
         <View style={s.header}>
           {!isProcessing
-            ? <TouchableOpacity onPress={goBack} style={s.backBtn}>
+            ? <Pressable onPress={goBack} style={s.backBtn}>
                 <Ionicons name="arrow-back" size={22} color={C.textPrimary} />
-              </TouchableOpacity>
+              </Pressable>
             : <View style={{ width: 40 }} />
           }
           <Text style={s.headerTitle}>{isProcessing ? 'Application Status' : 'Create Account'}</Text>
@@ -533,14 +533,14 @@ export default function Register() {
 
           {/* Continue button — not shown on 2FA or processing (they handle their own CTAs) */}
           {!isProcessing && !isTwoFA && (
-            <TouchableOpacity
+            <Pressable
               style={[s.primaryBtn, !canProceed() && { opacity: 0.4 }]}
               onPress={goNext}
               disabled={!canProceed()}
             >
               <Text style={s.primaryBtnText}>Continue</Text>
               <Ionicons name="arrow-forward" size={18} color="#fff" style={{ marginLeft: 6 }} />
-            </TouchableOpacity>
+            </Pressable>
           )}
         </ScrollView>
       </KeyboardAvoidingView>
