@@ -170,6 +170,12 @@ export default function Profile() {
           </Text>
         </View>
 
+        {/* Delete data */}
+        <TouchableOpacity style={s.deleteDataBtn} onPress={handleClearData}>
+          <Ionicons name="trash-outline" size={18} color={C.destructive} style={{ marginRight: 10 }} />
+          <Text style={s.deleteDataText}>Delete All Data</Text>
+        </TouchableOpacity>
+
         {/* Sign out */}
         <TouchableOpacity style={s.signOutBtn} onPress={handleSignOut}>
           <Ionicons name="log-out-outline" size={18} color={C.destructive} style={{ marginRight: 10 }} />
@@ -274,6 +280,14 @@ const s = StyleSheet.create({
     padding: 14, marginBottom: 20,
   },
   fcaText: { flex: 1, fontSize: 11, color: C.textMuted, lineHeight: 16 },
+
+  deleteDataBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(239,68,68,0.08)', borderRadius: 14,
+    borderWidth: 1, borderColor: 'rgba(239,68,68,0.25)',
+    paddingVertical: 15, marginBottom: 12,
+  },
+  deleteDataText: { fontSize: 16, fontWeight: '600', color: C.destructive },
 
   signOutBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
