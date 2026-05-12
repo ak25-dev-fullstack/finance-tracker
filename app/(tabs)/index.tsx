@@ -12,7 +12,6 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -203,13 +202,14 @@ export default function Index() {
     : 0;
 
   return (
-    <SafeAreaView style={s.container}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <>
+      <KeyboardAvoidingView style={s.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
           style={s.scroll}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.brandLight} />}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: 32 }}
+          contentInsetAdjustmentBehavior="automatic"
         >
           {/* Header */}
           <View style={s.header}>
@@ -274,8 +274,8 @@ export default function Index() {
           <View style={s.actionsRow}>
             {[
               { icon: 'add-circle-outline', label: 'Add', action: () => router.push('/add-transaction') },
-              { icon: 'cloud-upload-outline', label: 'Import', action: () => router.push('/(tabs)/import') },
-              { icon: 'bar-chart-outline', label: 'Insights', action: () => router.push('/(tabs)/insights') },
+              { icon: 'cloud-upload-outline', label: 'Import', action: () => router.push('/import') },
+              { icon: 'bar-chart-outline', label: 'Insights', action: () => router.push('/insights') },
               { icon: 'chatbubble-ellipses-outline', label: 'AI Chat', action: () => setShowAgent(true) },
             ].map((item) => (
               <Pressable key={item.label} style={s.actionBtn} onPress={item.action}>
@@ -329,7 +329,7 @@ export default function Index() {
             <View style={s.sectionHeader}>
               <Text style={s.sectionTitle}>Recent Transactions</Text>
               {transactions.length > 5 && (
-                <Pressable onPress={() => router.push('/(tabs)/insights')}>
+                <Pressable onPress={() => router.push('/insights')}>
                   <Text style={s.viewAll}>View all</Text>
                 </Pressable>
               )}
@@ -383,8 +383,8 @@ export default function Index() {
 
       {/* AI Agent Modal */}
       <Modal visible={showAgent} animationType="slide" transparent onRequestClose={() => setShowAgent(false)}>
-        <Pressable style={s.overlay} activeOpacity={1} onPress={() => setShowAgent(false)}>
-          <Pressable activeOpacity={1} style={s.sheet}>
+        <Pressable style={s.overlay} onPress={() => setShowAgent(false)}>
+          <Pressable style={s.sheet}>
             <View style={s.handle} />
             <Text style={s.sheetTitle}>AI Assistant</Text>
             <Text style={s.sheetSub}>Ask me to rename or organise your transactions</Text>
@@ -424,8 +424,8 @@ export default function Index() {
 
       {/* Edit Transaction Modal */}
       <Modal visible={!!editing} animationType="slide" transparent onRequestClose={() => setEditing(null)}>
-        <Pressable style={s.overlay} activeOpacity={1} onPress={() => setEditing(null)}>
-          <Pressable activeOpacity={1} style={s.sheet}>
+        <Pressable style={s.overlay} onPress={() => setEditing(null)}>
+          <Pressable style={[s.sheet, { opacity: 1 }]}>
             <View style={s.handle} />
             <View style={s.sheetTop}>
               <View style={{ flex: 1 }}>
@@ -533,7 +533,7 @@ export default function Index() {
           </Pressable>
         </Pressable>
       </Modal>
-    </SafeAreaView>
+    </>
   );
 }
 

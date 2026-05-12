@@ -9,7 +9,6 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system/next';
@@ -201,10 +200,7 @@ export default function Import() {
   };
 
   return (
-    <SafeAreaView style={s.container}>
-      <ScrollView style={s.scroll} contentContainerStyle={{ paddingBottom: 40 }}>
-        <Text style={s.title}>Import</Text>
-
+    <ScrollView style={[s.container, s.scroll]} contentContainerStyle={{ paddingBottom: 40 }} contentInsetAdjustmentBehavior="automatic">
         {step === 'idle' && (
           <>
             <Pressable style={s.uploadZone} onPress={handlePickFile}>
@@ -455,15 +451,13 @@ export default function Import() {
             </Pressable>
           </View>
         )}
-      </ScrollView>
-    </SafeAreaView>
+    </ScrollView>
   );
 }
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  scroll: { flex: 1, paddingHorizontal: 20 },
-  title: { fontSize: 28, fontWeight: '700', color: C.textPrimary, marginTop: 20, marginBottom: 20 },
+  scroll: { flex: 1, paddingHorizontal: 20, paddingTop: 16 },
 
   uploadZone: { backgroundColor: C.card, borderRadius: 20, borderWidth: 1.5, borderColor: C.brandBorder, borderStyle: 'dashed', padding: 32, alignItems: 'center', marginBottom: 16 },
   uploadIconWrap: { width: 72, height: 72, borderRadius: 36, backgroundColor: C.brandBg, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },

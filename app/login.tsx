@@ -10,7 +10,6 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/auth';
@@ -47,9 +46,8 @@ export default function Login() {
   };
 
   return (
-    <SafeAreaView style={s.container}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={s.inner} keyboardShouldPersistTaps="handled">
+    <KeyboardAvoidingView style={s.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={s.inner} keyboardShouldPersistTaps="handled" contentInsetAdjustmentBehavior="automatic">
           <View style={s.brandWrap}>
             <View style={s.logoCircle}>
               <Ionicons name="wallet" size={32} color="#fff" />
@@ -141,8 +139,7 @@ export default function Login() {
             </Pressable>
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 

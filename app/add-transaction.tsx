@@ -8,7 +8,6 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { appendTransactions } from '@/services/storage';
@@ -67,8 +66,7 @@ export default function AddTransaction() {
     setErrors((e) => { const next = { ...e }; delete next[field]; return next; });
 
   return (
-    <SafeAreaView style={s.container}>
-      <ScrollView style={s.scroll} contentContainerStyle={{ paddingBottom: 48 }} keyboardShouldPersistTaps="handled">
+    <ScrollView style={[s.container, s.scroll]} contentContainerStyle={{ paddingBottom: 48 }} keyboardShouldPersistTaps="handled" contentInsetAdjustmentBehavior="automatic">
 
         {/* Type toggle */}
         <View style={s.typeRow}>
@@ -181,8 +179,7 @@ export default function AddTransaction() {
           <Text style={s.cancelBtnText}>Cancel</Text>
         </Pressable>
 
-      </ScrollView>
-    </SafeAreaView>
+    </ScrollView>
   );
 }
 

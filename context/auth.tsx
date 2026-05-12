@@ -31,7 +31,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (username: string, password: string) => Promise<LoginResult>;
-  logout: () => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -57,9 +57,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return 'ok';
   };
 
-  const logout = async () => {
-    await AsyncStorage.removeItem(AUTH_KEY);
+  const logout = () => {
     setUser(null);
+    AsyncStorage.removeItem(AUTH_KEY).catch(() => {});
   };
 
   return (

@@ -13,8 +13,8 @@ export default function TabLayout() {
           backgroundColor: C.card,
           borderTopColor: C.border,
           borderTopWidth: 1,
-          height: 64,
-          paddingBottom: 10,
+          height: 80,
+          paddingBottom: 16,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
@@ -28,21 +28,28 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
+          tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="save"
+        options={{
+          title: 'Save',
           tabBarIcon: ({ color, size }) => <Ionicons name="wallet-outline" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="import"
+        name="invest"
         options={{
-          title: 'Import',
-          tabBarIcon: ({ color, size }) => <Ionicons name="cloud-upload-outline" size={size} color={color} />,
+          title: 'Invest',
+          tabBarIcon: ({ color, size }) => <Ionicons name="trending-up-outline" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="insights"
+        name="credit"
         options={{
-          title: 'Insights',
-          tabBarIcon: ({ color, size }) => <Ionicons name="bar-chart-outline" size={size} color={color} />,
+          title: 'Credit',
+          tabBarIcon: ({ color, size }) => <Ionicons name="card-outline" size={size} color={color} />,
         }}
       />
     </Tabs>

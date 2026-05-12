@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   Dimensions,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { useFocusEffect } from '@react-navigation/native';
@@ -195,10 +194,7 @@ export default function Insights() {
   };
 
   return (
-    <SafeAreaView style={s.container}>
-      <ScrollView style={s.scroll} contentContainerStyle={{ paddingBottom: 40 }}>
-        <Text style={s.title}>Spending Insights</Text>
-
+    <ScrollView style={[s.container, s.scroll]} contentContainerStyle={{ paddingBottom: 40 }} contentInsetAdjustmentBehavior="automatic">
         <View style={s.toggle}>
           {(['category', 'month'] as Mode[]).map((m) => (
             <Pressable key={m} style={[s.toggleBtn, mode === m && s.toggleActive]} onPress={() => setMode(m)}>
@@ -343,15 +339,13 @@ export default function Insights() {
             </View>
           </>
         )}
-      </ScrollView>
-    </SafeAreaView>
+    </ScrollView>
   );
 }
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  scroll: { flex: 1, paddingHorizontal: 20 },
-  title: { fontSize: 28, fontWeight: '700', color: C.textPrimary, marginTop: 20, marginBottom: 20 },
+  scroll: { flex: 1, paddingHorizontal: 20, paddingTop: 16 },
 
   toggle: { flexDirection: 'row', backgroundColor: C.card, borderRadius: 14, padding: 4, marginBottom: 20, borderWidth: 1, borderColor: C.border },
   toggleBtn: { flex: 1, paddingVertical: 10, borderRadius: 11, alignItems: 'center' },

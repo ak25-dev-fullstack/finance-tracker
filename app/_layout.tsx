@@ -55,6 +55,28 @@ function RootLayoutNav() {
             headerTitleStyle: { color: '#F8FAFC' },
           }}
         />
+        <Stack.Screen
+          name="import"
+          options={{
+            headerShown: true,
+            headerTitle: 'Import',
+            headerStyle: { backgroundColor: '#1E293B' },
+            headerTintColor: '#6bd8cb',
+            headerShadowVisible: false,
+            headerTitleStyle: { color: '#F8FAFC' },
+          }}
+        />
+        <Stack.Screen
+          name="insights"
+          options={{
+            headerShown: true,
+            headerTitle: 'Spending Insights',
+            headerStyle: { backgroundColor: '#1E293B' },
+            headerTintColor: '#6bd8cb',
+            headerShadowVisible: false,
+            headerTitleStyle: { color: '#F8FAFC' },
+          }}
+        />
       </Stack>
     </>
   );
