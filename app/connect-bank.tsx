@@ -85,6 +85,10 @@ function buildMockTransactions(bankId: BankId): ParsedRow[] {
     { desc: 'HMRC Tax Refund',       amount: 240.00,  type: 'income'  as const, daysAgo: 27 },
     { desc: 'Waterstones',           amount: 22.00,   type: 'expense' as const, daysAgo: 28 },
     { desc: 'Vue Cinema',            amount: 14.00,   type: 'expense' as const, daysAgo: 30 },
+    { desc: 'J HENDERSON',           amount: 50.00,   type: 'expense' as const, daysAgo: 4  },
+    { desc: 'SUM UP * GRN MRKT',     amount: 9.80,    type: 'expense' as const, daysAgo: 7  },
+    { desc: 'FASTER PAYMENT 882931', amount: 120.00,  type: 'expense' as const, daysAgo: 15 },
+    { desc: 'PMT REF 00492-B',       amount: 34.99,   type: 'expense' as const, daysAgo: 21 },
   ];
   return raw.map((r, i) => {
     const d = new Date(now);

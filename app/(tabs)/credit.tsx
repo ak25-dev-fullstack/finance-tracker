@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { C } from '@/constants/theme';
 
 type Section = 'overview' | 'loans' | 'pension' | 'mortgage';
@@ -55,6 +56,7 @@ function scoreLabel(score: number) {
 }
 
 export default function CreditScreen() {
+  const router = useRouter();
   const [section, setSection] = useState<Section>('overview');
 
   const totalDebt = LOANS.reduce((s, l) => s + l.balance, 0) + DEBTS.reduce((s, d) => s + d.balance, 0) + MORTGAGE.remaining;
@@ -258,6 +260,23 @@ export default function CreditScreen() {
             </View>
           </>
         )}
+
+        {/* Consult Adviser */}
+        <View style={s.adviserCard}>
+          <View style={s.adviserCardHeader}>
+            <View style={s.adviserIconWrap}>
+              <Ionicons name="people-outline" size={22} color={C.brandLight} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.adviserCardTitle}>Speak to an Adviser</Text>
+              <Text style={s.adviserCardSub}>Get expert advice on your debts, mortgage, and pension</Text>
+            </View>
+          </View>
+          <Pressable style={s.adviserBtn} onPress={() => router.push('/(tabs)/invest?tab=adviser' as any)}>
+            <Text style={s.adviserBtnText}>Consult Adviser</Text>
+            <Ionicons name="arrow-forward" size={16} color="#fff" />
+          </Pressable>
+        </View>
       </ScrollView>
     </View>
   );
@@ -326,4 +345,12 @@ const s = StyleSheet.create({
 
   pensionTip: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginHorizontal: 20, marginTop: 4, backgroundColor: C.brandBg, borderRadius: 14, borderWidth: 1, borderColor: C.brandBorder, padding: 14 },
   pensionTipText: { flex: 1, fontSize: 13, color: C.textSecondary, lineHeight: 20 },
+
+  adviserCard: { marginHorizontal: 20, marginTop: 20, backgroundColor: C.card, borderRadius: 20, borderWidth: 1, borderColor: C.brandBorder, padding: 18 },
+  adviserCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 },
+  adviserIconWrap: { width: 46, height: 46, borderRadius: 23, backgroundColor: C.brandBg, borderWidth: 1, borderColor: C.brandBorder, alignItems: 'center', justifyContent: 'center' },
+  adviserCardTitle: { fontSize: 15, fontWeight: '600', color: C.textPrimary },
+  adviserCardSub: { fontSize: 12, color: C.textMuted, marginTop: 2 },
+  adviserBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: C.brand, borderRadius: 12, paddingVertical: 12 },
+  adviserBtnText: { fontSize: 14, fontWeight: '600', color: '#fff' },
 });

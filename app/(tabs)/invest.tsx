@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocalSearchParams } from 'expo-router';
 import {
   View,
   Text,
@@ -62,20 +63,26 @@ const ADVISER_COMMENTS = [
 
 // ─── Sub-tab types ───────────────────────────────────────────────────────────
 
-type Tab = 'portfolio' | 'upload' | 'insights' | 'adviser' | 'goals';
+type Tab = 'portfolio' | 'upload' | 'adviser' | 'goals';
 
 const TABS: { key: Tab; label: string; icon: string }[] = [
   { key: 'portfolio', label: 'Portfolio', icon: 'pie-chart-outline' },
-  { key: 'upload', label: 'Upload', icon: 'add-circle-outline' },
-  { key: 'insights', label: 'Insights', icon: 'bulb-outline' },
-  { key: 'adviser', label: 'Adviser', icon: 'people-outline' },
   { key: 'goals', label: 'Goals', icon: 'flag-outline' },
+  { key: 'adviser', label: 'Adviser', icon: 'people-outline' },
+  { key: 'upload', label: 'Upload', icon: 'add-circle-outline' },
 ];
 
 // ─── Main screen ─────────────────────────────────────────────────────────────
 
 export default function InvestScreen() {
+  const { tab: tabParam } = useLocalSearchParams<{ tab?: Tab }>();
   const [tab, setTab] = useState<Tab>('portfolio');
+
+  useEffect(() => {
+    if (tabParam && (['portfolio', 'goals', 'adviser', 'upload'] as Tab[]).includes(tabParam)) {
+      setTab(tabParam);
+    }
+  }, [tabParam]);
 
   const total = HOLDINGS.reduce((s, h) => s + h.value, 0);
 
@@ -105,10 +112,9 @@ export default function InvestScreen() {
       {/* Content */}
       <View style={s.content}>
         {tab === 'portfolio' && <PortfolioTab total={total} />}
-        {tab === 'upload'    && <UploadTab />}
-        {tab === 'insights'  && <InsightsTab total={total} />}
-        {tab === 'adviser'   && <AdviserTab />}
         {tab === 'goals'     && <GoalsTab />}
+        {tab === 'adviser'   && <AdviserTab />}
+        {tab === 'upload'    && <UploadTab />}
       </View>
     </View>
   );
@@ -287,98 +293,6 @@ function UploadTab() {
           </Pressable>
         </Pressable>
       </Modal>
-    </ScrollView>
-  );
-}
-
-// ─── Insights tab ────────────────────────────────────────────────────────────
-
-function InsightsTab({ total }: { total: number }) {
-  const riskScore = 6.4;
-  const riskLabel = riskScore >= 7 ? 'High' : riskScore >= 4 ? 'Moderate' : 'Low';
-  const riskColor = riskScore >= 7 ? C.destructive : riskScore >= 4 ? C.warning : C.income;
-
-  const diversification = [
-    { label: 'Geographic spread', score: 78, note: 'Good — US, UK, global' },
-    { label: 'Sector spread', score: 54, note: 'Moderate — heavy in tech' },
-    { label: 'Asset class mix', score: 82, note: 'Strong — 6 asset classes' },
-    { label: 'Currency exposure', score: 61, note: 'Fair — mostly USD/GBP' },
-  ];
-
-  const aiInsights = [
-    { icon: 'alert-circle-outline', color: C.warning, text: 'Crypto allocation (10.2%) is above the recommended 5% for moderate-risk profiles.' },
-    { icon: 'checkmark-circle-outline', color: C.income, text: 'Your ETF holdings provide broad market exposure with low fees. Well diversified.' },
-    { icon: 'information-circle-outline', color: C.brandLight, text: 'Consider adding bond exposure to reduce overall portfolio volatility.' },
-    { icon: 'trending-up-outline', color: C.income, text: 'At current growth rate (+6.2% p.a.) your portfolio doubles in ~11.5 years.' },
-  ];
-
-  return (
-    <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-      {/* Risk score */}
-      <Text style={s.sectionTitle}>Risk level</Text>
-      <View style={s.card}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 16 }}>
-          <View style={[s.riskCircle, { borderColor: riskColor }]}>
-            <Text style={[s.riskNumber, { color: riskColor }]}>{riskScore}</Text>
-            <Text style={s.riskMax}>/10</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[s.riskLabel, { color: riskColor }]}>{riskLabel} Risk</Text>
-            <Text style={s.riskDesc}>Based on asset allocation, volatility history, and concentration.</Text>
-          </View>
-        </View>
-        <View style={s.barWrap}>
-          <View style={[s.barFill, { width: `${(riskScore / 10) * 100}%` as any, backgroundColor: riskColor }]} />
-        </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
-          <Text style={s.scaleLabel}>Low</Text>
-          <Text style={s.scaleLabel}>Moderate</Text>
-          <Text style={s.scaleLabel}>High</Text>
-        </View>
-      </View>
-
-      {/* Diversification */}
-      <Text style={s.sectionTitle}>Diversification</Text>
-      <View style={s.card}>
-        {diversification.map((d) => (
-          <View key={d.label} style={s.divRow}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
-              <Text style={s.divLabel}>{d.label}</Text>
-              <Text style={[s.divScore, { color: d.score >= 70 ? C.income : d.score >= 50 ? C.warning : C.destructive }]}>{d.score}</Text>
-            </View>
-            <View style={s.barWrap}>
-              <View style={[s.barFill, { width: `${d.score}%` as any, backgroundColor: d.score >= 70 ? C.income : d.score >= 50 ? C.warning : C.destructive }]} />
-            </View>
-            <Text style={s.divNote}>{d.note}</Text>
-          </View>
-        ))}
-      </View>
-
-      {/* AI insights */}
-      <Text style={s.sectionTitle}>AI analysis</Text>
-      {aiInsights.map((ins, i) => (
-        <View key={i} style={[s.insightRow, { borderLeftColor: ins.color }]}>
-          <Ionicons name={ins.icon as any} size={18} color={ins.color} />
-          <Text style={s.insightText}>{ins.text}</Text>
-        </View>
-      ))}
-
-      {/* Performance */}
-      <Text style={s.sectionTitle}>Performance</Text>
-      <View style={s.card}>
-        {[
-          { label: '1 month', val: '+1.4%', pos: true },
-          { label: '3 months', val: '+3.8%', pos: true },
-          { label: '6 months', val: '-0.9%', pos: false },
-          { label: '1 year', val: '+6.2%', pos: true },
-          { label: 'All time', val: '+22.1%', pos: true },
-        ].map((row) => (
-          <View key={row.label} style={s.perfRow}>
-            <Text style={s.perfLabel}>{row.label}</Text>
-            <Text style={[s.perfVal, { color: row.pos ? C.income : C.destructive }]}>{row.val}</Text>
-          </View>
-        ))}
-      </View>
     </ScrollView>
   );
 }
@@ -627,25 +541,6 @@ const s = StyleSheet.create({
   uploadSub: { fontSize: 13, color: C.textMuted, textAlign: 'center', lineHeight: 20 },
   uploadBtn: { marginTop: 8, backgroundColor: C.brand, paddingHorizontal: 24, paddingVertical: 10, borderRadius: 20 },
   uploadBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
-
-  riskCircle: { width: 72, height: 72, borderRadius: 36, borderWidth: 3, alignItems: 'center', justifyContent: 'center' },
-  riskNumber: { fontSize: 26, fontWeight: '800' },
-  riskMax: { fontSize: 11, color: C.textMuted, marginTop: -4 },
-  riskLabel: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
-  riskDesc: { fontSize: 12, color: C.textMuted, lineHeight: 18 },
-  scaleLabel: { fontSize: 10, color: C.textMuted },
-
-  divRow: { marginBottom: 16 },
-  divLabel: { fontSize: 13, fontWeight: '500', color: C.textSecondary },
-  divScore: { fontSize: 13, fontWeight: '700' },
-  divNote: { fontSize: 11, color: C.textMuted, marginTop: 5 },
-
-  insightRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginHorizontal: 20, marginBottom: 10, backgroundColor: C.card, borderRadius: 14, borderWidth: 1, borderColor: C.border, borderLeftWidth: 3, padding: 14 },
-  insightText: { flex: 1, fontSize: 13, color: C.textSecondary, lineHeight: 20 },
-
-  perfRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: C.border },
-  perfLabel: { fontSize: 13, color: C.textSecondary },
-  perfVal: { fontSize: 14, fontWeight: '700' },
 
   adviserCard: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: 20, marginBottom: 10, backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, padding: 14 },
   adviserAvatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
