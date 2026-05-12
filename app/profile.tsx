@@ -10,7 +10,7 @@ import {
   Share,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useNavigation } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '@/context/auth';
 import { clearAllData, loadTransactions, loadImportBatches } from '@/services/storage';
@@ -18,6 +18,7 @@ import { C } from '@/constants/theme';
 
 export default function Profile() {
   const router = useRouter();
+  const navigation = useNavigation();
   const { user, logout } = useAuth();
   const [txCount, setTxCount] = useState(0);
   const [batchCount, setBatchCount] = useState(0);
@@ -83,7 +84,7 @@ export default function Profile() {
     <SafeAreaView style={s.container}>
       {/* Header bar */}
       <View style={s.header}>
-        <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
+        <TouchableOpacity onPress={() => navigation.canGoBack() ? navigation.goBack() : router.replace('/(tabs)')} style={s.backBtn}>
           <Ionicons name="arrow-back" size={22} color={C.textPrimary} />
         </TouchableOpacity>
         <Text style={s.headerTitle}>Account</Text>
