@@ -371,12 +371,8 @@ export default function Index() {
               <Text style={s.insightTitle}>Market Insight</Text>
             </View>
             <Text style={s.insightText}>
-              Connect with a Financial Adviser in the Advisor tab for personalised wealth management and portfolio analysis.
+              Your portfolio is visible to your assigned DWK adviser. They will reach out with personalised wealth management and portfolio analysis.
             </Text>
-            <Pressable style={s.insightBtn} onPress={() => router.push('/(tabs)/advisor')}>
-              <Text style={s.insightBtnText}>Connect to Advisor</Text>
-              <Ionicons name="arrow-forward" size={14} color={C.brandLight} />
-            </Pressable>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -597,9 +593,7 @@ const s = StyleSheet.create({
   insightCard: { marginHorizontal: 20, marginBottom: 8, backgroundColor: C.card, borderRadius: 20, borderWidth: 1, borderColor: C.brandBorder, padding: 18 },
   insightHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
   insightTitle: { fontSize: 14, fontWeight: '600', color: C.textPrimary },
-  insightText: { fontSize: 13, color: C.textSecondary, lineHeight: 20, marginBottom: 14 },
-  insightBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  insightBtnText: { fontSize: 13, fontWeight: '600', color: C.brandLight },
+  insightText: { fontSize: 13, color: C.textSecondary, lineHeight: 20 },
 
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   sheet: { backgroundColor: C.card, borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 44 },

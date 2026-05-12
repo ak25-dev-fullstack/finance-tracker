@@ -5,9 +5,13 @@ import {
   ScrollView,
   Pressable,
   StyleSheet,
+  Modal,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { C } from '@/constants/theme';
+
+// ─── Shared data ────────────────────────────────────────────────────────────
 
 type Holding = {
   id: string;
@@ -15,46 +19,105 @@ type Holding = {
   ticker: string;
   type: 'Stocks' | 'ETFs' | 'Bonds' | 'Crypto' | 'Cash' | 'Real Estate';
   value: number;
-  change: number; // percent
-  color: string;
+  change: number;
+};
+
+const TYPE_COLORS: Record<string, string> = {
+  Stocks: '#42A5F5', ETFs: '#6bd8cb', Bonds: '#F59E0B',
+  Crypto: '#FF7043', Cash: '#78909C', 'Real Estate': '#AB47BC',
+};
+const TYPE_ICONS: Record<string, string> = {
+  Stocks: 'trending-up-outline', ETFs: 'pie-chart-outline',
+  Bonds: 'document-text-outline', Crypto: 'logo-bitcoin',
+  Cash: 'cash-outline', 'Real Estate': 'home-outline',
 };
 
 const HOLDINGS: Holding[] = [
-  { id: '1', name: 'Apple Inc.', ticker: 'AAPL', type: 'Stocks', value: 3420.50, change: 2.4, color: '#42A5F5' },
-  { id: '2', name: 'Tesla Inc.', ticker: 'TSLA', type: 'Stocks', value: 1870.00, change: -1.2, color: '#42A5F5' },
-  { id: '3', name: 'Vanguard S&P 500', ticker: 'VOO', type: 'ETFs', value: 5200.00, change: 0.8, color: '#6bd8cb' },
-  { id: '4', name: 'iShares MSCI World', ticker: 'IWRD', type: 'ETFs', value: 2800.00, change: 0.3, color: '#6bd8cb' },
-  { id: '5', name: 'UK Gilts 2030', ticker: 'GILT', type: 'Bonds', value: 1500.00, change: -0.1, color: '#F59E0B' },
-  { id: '6', name: 'Bitcoin', ticker: 'BTC', type: 'Crypto', value: 920.00, change: 4.7, color: '#FF7043' },
-  { id: '7', name: 'Ethereum', ticker: 'ETH', type: 'Crypto', value: 480.00, change: 3.1, color: '#FF7043' },
-  { id: '8', name: 'Cash Reserve', ticker: 'CASH', type: 'Cash', value: 1200.00, change: 0, color: '#78909C' },
-  { id: '9', name: 'Property Fund', ticker: 'PROP', type: 'Real Estate', value: 4000.00, change: 0.5, color: '#AB47BC' },
+  { id: '1', name: 'Apple Inc.', ticker: 'AAPL', type: 'Stocks', value: 3420.50, change: 2.4 },
+  { id: '2', name: 'Tesla Inc.', ticker: 'TSLA', type: 'Stocks', value: 1870.00, change: -1.2 },
+  { id: '3', name: 'Vanguard S&P 500', ticker: 'VOO', type: 'ETFs', value: 5200.00, change: 0.8 },
+  { id: '4', name: 'iShares MSCI World', ticker: 'IWRD', type: 'ETFs', value: 2800.00, change: 0.3 },
+  { id: '5', name: 'UK Gilts 2030', ticker: 'GILT', type: 'Bonds', value: 1500.00, change: -0.1 },
+  { id: '6', name: 'Bitcoin', ticker: 'BTC', type: 'Crypto', value: 920.00, change: 4.7 },
+  { id: '7', name: 'Ethereum', ticker: 'ETH', type: 'Crypto', value: 480.00, change: 3.1 },
+  { id: '8', name: 'Cash Reserve', ticker: 'CASH', type: 'Cash', value: 1200.00, change: 0 },
+  { id: '9', name: 'Property Fund', ticker: 'PROP', type: 'Real Estate', value: 4000.00, change: 0.5 },
 ];
 
-const TYPE_COLORS: Record<string, string> = {
-  Stocks: '#42A5F5',
-  ETFs: '#6bd8cb',
-  Bonds: '#F59E0B',
-  Crypto: '#FF7043',
-  Cash: '#78909C',
-  'Real Estate': '#AB47BC',
-};
+const CONNECTED_SOURCES = [
+  { id: '1', name: 'Freetrade', type: 'Brokerage', accounts: 2, color: '#42A5F5', icon: 'trending-up-outline' },
+  { id: '2', name: 'Moneybox', type: 'ISA / LISA', accounts: 1, color: '#6bd8cb', icon: 'wallet-outline' },
+];
 
-const TYPE_ICONS: Record<string, string> = {
-  Stocks: 'trending-up-outline',
-  ETFs: 'pie-chart-outline',
-  Bonds: 'document-text-outline',
-  Crypto: 'logo-bitcoin',
-  Cash: 'cash-outline',
-  'Real Estate': 'home-outline',
-};
+const GOALS = [
+  { id: '1', name: 'Retirement at 60', target: 500000, current: 40600, deadline: '2044', icon: 'leaf-outline', color: '#22C55E' },
+  { id: '2', name: 'Buy a property', target: 80000, current: 22400, deadline: '2028', icon: 'home-outline', color: '#6bd8cb' },
+  { id: '3', name: 'Education fund', target: 30000, current: 8200, deadline: '2031', icon: 'school-outline', color: '#AB47BC' },
+];
 
-type FilterType = 'All' | Holding['type'];
+const ADVISER_COMMENTS = [
+  { id: '1', author: 'James Whitfield', role: 'Senior Adviser', date: '8 May 2025', text: 'Your equity allocation looks healthy. Consider trimming crypto exposure below 5% to reduce volatility risk.', avatar: 'JW' },
+  { id: '2', author: 'Priya Nair', role: 'Portfolio Analyst', date: '2 May 2025', text: 'The MSCI World ETF is a strong core holding. Worth reviewing the UK Gilts position given current rate expectations.', avatar: 'PN' },
+];
+
+// ─── Sub-tab types ───────────────────────────────────────────────────────────
+
+type Tab = 'portfolio' | 'invest' | 'insights' | 'adviser' | 'goals';
+
+const TABS: { key: Tab; label: string; icon: string }[] = [
+  { key: 'portfolio', label: 'Portfolio', icon: 'pie-chart-outline' },
+  { key: 'invest', label: 'Invest', icon: 'add-circle-outline' },
+  { key: 'insights', label: 'Insights', icon: 'bulb-outline' },
+  { key: 'adviser', label: 'Adviser', icon: 'people-outline' },
+  { key: 'goals', label: 'Goals', icon: 'flag-outline' },
+];
+
+// ─── Main screen ─────────────────────────────────────────────────────────────
 
 export default function InvestScreen() {
-  const [filter, setFilter] = useState<FilterType>('All');
+  const [tab, setTab] = useState<Tab>('portfolio');
 
   const total = HOLDINGS.reduce((s, h) => s + h.value, 0);
+
+  return (
+    <View style={s.container}>
+      {/* Header */}
+      <View style={s.header}>
+        <View>
+          <Text style={s.title}>Invest</Text>
+          <Text style={s.sub}>£{total.toLocaleString('en-GB', { minimumFractionDigits: 2 })} portfolio</Text>
+        </View>
+        <Pressable style={s.iconBtn}>
+          <Ionicons name="refresh-outline" size={20} color={C.brandLight} />
+        </Pressable>
+      </View>
+
+      {/* Sub-tab bar */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.tabBar} contentContainerStyle={s.tabBarContent}>
+        {TABS.map((t) => (
+          <Pressable key={t.key} style={[s.tabPill, tab === t.key && s.tabPillActive]} onPress={() => setTab(t.key)}>
+            <Ionicons name={t.icon as any} size={16} color={tab === t.key ? '#fff' : C.textMuted} />
+            <Text style={[s.tabPillText, tab === t.key && s.tabPillTextActive]}>{t.label}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+
+      {/* Content */}
+      <View style={s.content}>
+        {tab === 'portfolio' && <PortfolioTab total={total} />}
+        {tab === 'invest'    && <InvestTab />}
+        {tab === 'insights'  && <InsightsTab total={total} />}
+        {tab === 'adviser'   && <AdviserTab />}
+        {tab === 'goals'     && <GoalsTab />}
+      </View>
+    </View>
+  );
+}
+
+// ─── Portfolio tab ───────────────────────────────────────────────────────────
+
+function PortfolioTab({ total }: { total: number }) {
+  const [filter, setFilter] = useState<'All' | Holding['type']>('All');
 
   const byType = Object.entries(
     HOLDINGS.reduce<Record<string, number>>((acc, h) => {
@@ -64,117 +127,475 @@ export default function InvestScreen() {
   ).sort((a, b) => b[1] - a[1]);
 
   const filtered = filter === 'All' ? HOLDINGS : HOLDINGS.filter((h) => h.type === filter);
-
-  const filters: FilterType[] = ['All', 'Stocks', 'ETFs', 'Bonds', 'Crypto', 'Cash', 'Real Estate'];
+  const filters = ['All', 'Stocks', 'ETFs', 'Bonds', 'Crypto', 'Cash', 'Real Estate'] as const;
 
   return (
-    <View style={s.container}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        {/* Header */}
-        <View style={s.header}>
-          <View>
-            <Text style={s.title}>Invest</Text>
-            <Text style={s.sub}>Your portfolio overview</Text>
-          </View>
-          <Pressable style={s.iconBtn}>
-            <Ionicons name="refresh-outline" size={20} color={C.brandLight} />
+    <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+      {/* Total card */}
+      <View style={s.heroCard}>
+        <Text style={s.heroLabel}>Total Portfolio Value</Text>
+        <Text style={s.heroAmount}>£{total.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</Text>
+        <View style={s.heroBadge}>
+          <Ionicons name="trending-up" size={12} color={C.income} />
+          <Text style={s.heroBadgeText}> +6.2% this year</Text>
+        </View>
+      </View>
+
+      {/* Breakdown */}
+      <Text style={s.sectionTitle}>Breakdown by type</Text>
+      <View style={s.card}>
+        {byType.map(([type, value]) => {
+          const pct = (value / total) * 100;
+          const col = TYPE_COLORS[type] ?? C.brand;
+          return (
+            <View key={type} style={s.breakdownRow}>
+              <View style={[s.dot, { backgroundColor: col }]} />
+              <Text style={s.breakdownType}>{type}</Text>
+              <View style={s.barWrap}>
+                <View style={[s.barFill, { width: `${pct}%` as any, backgroundColor: col }]} />
+              </View>
+              <Text style={s.breakdownPct}>{pct.toFixed(1)}%</Text>
+              <Text style={s.breakdownVal}>£{value.toLocaleString('en-GB', { minimumFractionDigits: 0 })}</Text>
+            </View>
+          );
+        })}
+      </View>
+
+      {/* Filter pills */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 22 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
+        {filters.map((f) => (
+          <Pressable key={f} style={[s.filterPill, filter === f && s.filterPillActive]} onPress={() => setFilter(f as any)}>
+            <Text style={[s.filterPillText, filter === f && s.filterPillTextActive]}>{f}</Text>
           </Pressable>
-        </View>
-
-        {/* Total Card */}
-        <View style={s.totalCard}>
-          <Text style={s.totalLabel}>Portfolio Value</Text>
-          <Text style={s.totalAmount}>£{total.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</Text>
-          <View style={s.totalBadge}>
-            <Ionicons name="trending-up" size={12} color={C.income} />
-            <Text style={s.totalBadgeText}> +6.2% this year</Text>
-          </View>
-        </View>
-
-        {/* Breakdown by Type */}
-        <Text style={s.sectionTitle}>Breakdown</Text>
-        <View style={s.breakdownCard}>
-          {byType.map(([type, value]) => {
-            const pct = (value / total) * 100;
-            const col = TYPE_COLORS[type] ?? C.brand;
-            return (
-              <View key={type} style={s.breakdownRow}>
-                <View style={[s.breakdownDot, { backgroundColor: col }]} />
-                <Text style={s.breakdownType}>{type}</Text>
-                <View style={s.breakdownBarWrap}>
-                  <View style={[s.breakdownBar, { width: `${pct}%` as any, backgroundColor: col + '55' }]}>
-                    <View style={[s.breakdownBarFill, { width: `${Math.min(pct * 2, 100)}%` as any, backgroundColor: col }]} />
-                  </View>
-                </View>
-                <Text style={s.breakdownPct}>{pct.toFixed(1)}%</Text>
-                <Text style={s.breakdownVal}>£{value.toLocaleString('en-GB', { minimumFractionDigits: 0 })}</Text>
-              </View>
-            );
-          })}
-        </View>
-
-        {/* Filter Pills */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 22 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
-          {filters.map((f) => (
-            <Pressable key={f} style={[s.filterPill, filter === f && s.filterPillActive]} onPress={() => setFilter(f)}>
-              <Text style={[s.filterPillText, filter === f && s.filterPillTextActive]}>{f}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-
-        {/* Holdings */}
-        <Text style={s.sectionTitle}>Holdings</Text>
-        {filtered.map((h) => (
-          <View key={h.id} style={s.holdingCard}>
-            <View style={[s.holdingIcon, { backgroundColor: h.color + '22' }]}>
-              <Ionicons name={TYPE_ICONS[h.type] as any} size={18} color={h.color} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <View style={s.holdingNameRow}>
-                <Text style={s.holdingName}>{h.name}</Text>
-                <View style={[s.typeBadge, { backgroundColor: h.color + '22' }]}>
-                  <Text style={[s.typeBadgeText, { color: h.color }]}>{h.type}</Text>
-                </View>
-              </View>
-              <Text style={s.holdingTicker}>{h.ticker}</Text>
-            </View>
-            <View style={s.holdingRight}>
-              <Text style={s.holdingValue}>£{h.value.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</Text>
-              <Text style={[s.holdingChange, { color: h.change > 0 ? C.income : h.change < 0 ? C.destructive : C.textMuted }]}>
-                {h.change > 0 ? '+' : ''}{h.change.toFixed(1)}%
-              </Text>
-            </View>
-          </View>
         ))}
       </ScrollView>
-    </View>
+
+      {/* Holdings */}
+      <Text style={s.sectionTitle}>Holdings</Text>
+      {filtered.map((h) => (
+        <View key={h.id} style={s.holdingCard}>
+          <View style={[s.holdingIcon, { backgroundColor: TYPE_COLORS[h.type] + '22' }]}>
+            <Ionicons name={TYPE_ICONS[h.type] as any} size={18} color={TYPE_COLORS[h.type]} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+              <Text style={s.holdingName}>{h.name}</Text>
+              <View style={[s.typeBadge, { backgroundColor: TYPE_COLORS[h.type] + '22' }]}>
+                <Text style={[s.typeBadgeText, { color: TYPE_COLORS[h.type] }]}>{h.type}</Text>
+              </View>
+            </View>
+            <Text style={s.holdingTicker}>{h.ticker}</Text>
+          </View>
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={s.holdingValue}>£{h.value.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</Text>
+            <Text style={[s.holdingChange, { color: h.change > 0 ? C.income : h.change < 0 ? C.destructive : C.textMuted }]}>
+              {h.change > 0 ? '+' : ''}{h.change.toFixed(1)}%
+            </Text>
+          </View>
+        </View>
+      ))}
+    </ScrollView>
   );
 }
 
+// ─── Invest tab ──────────────────────────────────────────────────────────────
+
+function InvestTab() {
+  const [showManual, setShowManual] = useState(false);
+  const [manualName, setManualName] = useState('');
+  const [manualTicker, setManualTicker] = useState('');
+  const [manualValue, setManualValue] = useState('');
+  const [manualType, setManualType] = useState('Stocks');
+
+  const types = ['Stocks', 'ETFs', 'Bonds', 'Crypto', 'Cash', 'Real Estate'];
+
+  return (
+    <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+      {/* Connected sources */}
+      <Text style={s.sectionTitle}>Connected accounts</Text>
+      {CONNECTED_SOURCES.map((src) => (
+        <View key={src.id} style={s.sourceCard}>
+          <View style={[s.sourceIcon, { backgroundColor: src.color + '22' }]}>
+            <Ionicons name={src.icon as any} size={20} color={src.color} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={s.sourceName}>{src.name}</Text>
+            <Text style={s.sourceSub}>{src.type} · {src.accounts} account{src.accounts > 1 ? 's' : ''}</Text>
+          </View>
+          <View style={s.connectedBadge}>
+            <Text style={s.connectedBadgeText}>Connected</Text>
+          </View>
+        </View>
+      ))}
+      <Pressable style={s.outlineBtn}>
+        <Ionicons name="link-outline" size={18} color={C.brandLight} />
+        <Text style={s.outlineBtnText}>Connect another account</Text>
+      </Pressable>
+
+      {/* Upload PDFs */}
+      <Text style={s.sectionTitle}>Upload statements</Text>
+      <Pressable style={s.uploadCard}>
+        <View style={s.uploadIconWrap}>
+          <Ionicons name="document-attach-outline" size={28} color={C.brandLight} />
+        </View>
+        <Text style={s.uploadTitle}>Upload a PDF statement</Text>
+        <Text style={s.uploadSub}>We'll extract your holdings automatically from broker or pension statements</Text>
+        <View style={s.uploadBtn}>
+          <Text style={s.uploadBtnText}>Choose file</Text>
+        </View>
+      </Pressable>
+
+      {/* Manual entry */}
+      <Text style={s.sectionTitle}>Manual entry</Text>
+      <Pressable style={s.outlineBtn} onPress={() => setShowManual(true)}>
+        <Ionicons name="add-circle-outline" size={18} color={C.brandLight} />
+        <Text style={s.outlineBtnText}>Add holding manually</Text>
+      </Pressable>
+
+      {/* Manual entry modal */}
+      <Modal visible={showManual} animationType="slide" transparent onRequestClose={() => setShowManual(false)}>
+        <Pressable style={s.overlay} onPress={() => setShowManual(false)}>
+          <Pressable style={s.sheet}>
+            <View style={s.handle} />
+            <Text style={s.sheetTitle}>Add Holding</Text>
+
+            <Text style={s.fieldLabel}>Name</Text>
+            <TextInput style={s.input} placeholder="e.g. Apple Inc." placeholderTextColor={C.textMuted} value={manualName} onChangeText={setManualName} />
+
+            <Text style={s.fieldLabel}>Ticker / reference</Text>
+            <TextInput style={s.input} placeholder="e.g. AAPL" placeholderTextColor={C.textMuted} value={manualTicker} onChangeText={setManualTicker} autoCapitalize="characters" />
+
+            <Text style={s.fieldLabel}>Current value (£)</Text>
+            <TextInput style={s.input} placeholder="0.00" placeholderTextColor={C.textMuted} keyboardType="numeric" value={manualValue} onChangeText={setManualValue} />
+
+            <Text style={s.fieldLabel}>Asset type</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }} contentContainerStyle={{ gap: 8 }}>
+              {types.map((t) => (
+                <Pressable key={t} style={[s.filterPill, manualType === t && s.filterPillActive]} onPress={() => setManualType(t)}>
+                  <Text style={[s.filterPillText, manualType === t && s.filterPillTextActive]}>{t}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+
+            <Pressable
+              style={[s.saveBtn, (!manualName.trim() || !manualValue.trim()) && { opacity: 0.4 }]}
+              onPress={() => setShowManual(false)}
+              disabled={!manualName.trim() || !manualValue.trim()}
+            >
+              <Text style={s.saveBtnText}>Add Holding</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
+    </ScrollView>
+  );
+}
+
+// ─── Insights tab ────────────────────────────────────────────────────────────
+
+function InsightsTab({ total }: { total: number }) {
+  const riskScore = 6.4;
+  const riskLabel = riskScore >= 7 ? 'High' : riskScore >= 4 ? 'Moderate' : 'Low';
+  const riskColor = riskScore >= 7 ? C.destructive : riskScore >= 4 ? C.warning : C.income;
+
+  const diversification = [
+    { label: 'Geographic spread', score: 78, note: 'Good — US, UK, global' },
+    { label: 'Sector spread', score: 54, note: 'Moderate — heavy in tech' },
+    { label: 'Asset class mix', score: 82, note: 'Strong — 6 asset classes' },
+    { label: 'Currency exposure', score: 61, note: 'Fair — mostly USD/GBP' },
+  ];
+
+  const aiInsights = [
+    { icon: 'alert-circle-outline', color: C.warning, text: 'Crypto allocation (10.2%) is above the recommended 5% for moderate-risk profiles.' },
+    { icon: 'checkmark-circle-outline', color: C.income, text: 'Your ETF holdings provide broad market exposure with low fees. Well diversified.' },
+    { icon: 'information-circle-outline', color: C.brandLight, text: 'Consider adding bond exposure to reduce overall portfolio volatility.' },
+    { icon: 'trending-up-outline', color: C.income, text: 'At current growth rate (+6.2% p.a.) your portfolio doubles in ~11.5 years.' },
+  ];
+
+  return (
+    <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+      {/* Risk score */}
+      <Text style={s.sectionTitle}>Risk level</Text>
+      <View style={s.card}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+          <View style={[s.riskCircle, { borderColor: riskColor }]}>
+            <Text style={[s.riskNumber, { color: riskColor }]}>{riskScore}</Text>
+            <Text style={s.riskMax}>/10</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[s.riskLabel, { color: riskColor }]}>{riskLabel} Risk</Text>
+            <Text style={s.riskDesc}>Based on asset allocation, volatility history, and concentration.</Text>
+          </View>
+        </View>
+        <View style={s.barWrap}>
+          <View style={[s.barFill, { width: `${(riskScore / 10) * 100}%` as any, backgroundColor: riskColor }]} />
+        </View>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
+          <Text style={s.scaleLabel}>Low</Text>
+          <Text style={s.scaleLabel}>Moderate</Text>
+          <Text style={s.scaleLabel}>High</Text>
+        </View>
+      </View>
+
+      {/* Diversification */}
+      <Text style={s.sectionTitle}>Diversification</Text>
+      <View style={s.card}>
+        {diversification.map((d) => (
+          <View key={d.label} style={s.divRow}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+              <Text style={s.divLabel}>{d.label}</Text>
+              <Text style={[s.divScore, { color: d.score >= 70 ? C.income : d.score >= 50 ? C.warning : C.destructive }]}>{d.score}</Text>
+            </View>
+            <View style={s.barWrap}>
+              <View style={[s.barFill, { width: `${d.score}%` as any, backgroundColor: d.score >= 70 ? C.income : d.score >= 50 ? C.warning : C.destructive }]} />
+            </View>
+            <Text style={s.divNote}>{d.note}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* AI insights */}
+      <Text style={s.sectionTitle}>AI analysis</Text>
+      {aiInsights.map((ins, i) => (
+        <View key={i} style={[s.insightRow, { borderLeftColor: ins.color }]}>
+          <Ionicons name={ins.icon as any} size={18} color={ins.color} />
+          <Text style={s.insightText}>{ins.text}</Text>
+        </View>
+      ))}
+
+      {/* Performance */}
+      <Text style={s.sectionTitle}>Performance</Text>
+      <View style={s.card}>
+        {[
+          { label: '1 month', val: '+1.4%', pos: true },
+          { label: '3 months', val: '+3.8%', pos: true },
+          { label: '6 months', val: '-0.9%', pos: false },
+          { label: '1 year', val: '+6.2%', pos: true },
+          { label: 'All time', val: '+22.1%', pos: true },
+        ].map((row) => (
+          <View key={row.label} style={s.perfRow}>
+            <Text style={s.perfLabel}>{row.label}</Text>
+            <Text style={[s.perfVal, { color: row.pos ? C.income : C.destructive }]}>{row.val}</Text>
+          </View>
+        ))}
+      </View>
+    </ScrollView>
+  );
+}
+
+// ─── Adviser tab ─────────────────────────────────────────────────────────────
+
+function AdviserTab() {
+  const [message, setMessage] = useState('');
+
+  return (
+    <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+      {/* Adviser team */}
+      <Text style={s.sectionTitle}>Your advisory team</Text>
+      {[
+        { name: 'James Whitfield', role: 'Senior Adviser', status: 'Online', avatar: 'JW', color: '#42A5F5' },
+        { name: 'Priya Nair', role: 'Portfolio Analyst', status: 'Away', avatar: 'PN', color: '#AB47BC' },
+      ].map((adv) => (
+        <View key={adv.name} style={s.adviserCard}>
+          <View style={[s.adviserAvatar, { backgroundColor: adv.color + '33' }]}>
+            <Text style={[s.adviserAvatarText, { color: adv.color }]}>{adv.avatar}</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={s.adviserName}>{adv.name}</Text>
+            <Text style={s.adviserRole}>{adv.role}</Text>
+          </View>
+          <View style={[s.statusDot, { backgroundColor: adv.status === 'Online' ? C.income : C.warning }]} />
+          <Text style={[s.statusText, { color: adv.status === 'Online' ? C.income : C.warning }]}>{adv.status}</Text>
+        </View>
+      ))}
+
+      {/* Comments */}
+      <Text style={s.sectionTitle}>Latest comments</Text>
+      {ADVISER_COMMENTS.map((c) => (
+        <View key={c.id} style={s.commentCard}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+            <View style={s.commentAvatar}>
+              <Text style={s.commentAvatarText}>{c.avatar}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.commentAuthor}>{c.author}</Text>
+              <Text style={s.commentMeta}>{c.role} · {c.date}</Text>
+            </View>
+          </View>
+          <Text style={s.commentText}>{c.text}</Text>
+        </View>
+      ))}
+
+      {/* Share portfolio */}
+      <Text style={s.sectionTitle}>Share portfolio</Text>
+      <View style={s.card}>
+        <Text style={s.shareDesc}>Give your adviser a read-only view of your portfolio for personalised recommendations.</Text>
+        <Pressable style={s.saveBtn}>
+          <Text style={s.saveBtnText}>Share portfolio access</Text>
+        </Pressable>
+      </View>
+
+      {/* Message */}
+      <Text style={s.sectionTitle}>Send a message</Text>
+      <View style={s.card}>
+        <TextInput
+          style={[s.input, { height: 88, textAlignVertical: 'top' }]}
+          placeholder="Ask your adviser a question…"
+          placeholderTextColor={C.textMuted}
+          value={message}
+          onChangeText={setMessage}
+          multiline
+        />
+        <Pressable style={[s.saveBtn, { marginTop: 4 }, !message.trim() && { opacity: 0.4 }]} disabled={!message.trim()}>
+          <Text style={s.saveBtnText}>Send message</Text>
+        </Pressable>
+      </View>
+    </ScrollView>
+  );
+}
+
+// ─── Goals tab ───────────────────────────────────────────────────────────────
+
+function GoalsTab() {
+  const [showModal, setShowModal] = useState(false);
+  const [name, setName] = useState('');
+  const [target, setTarget] = useState('');
+  const [deadline, setDeadline] = useState('');
+  const [pickedColor, setPickedColor] = useState('#22C55E');
+
+  const COLOR_OPTIONS = ['#22C55E', '#6bd8cb', '#F59E0B', '#EF4444', '#AB47BC', '#42A5F5', '#FF7043', '#EC407A'];
+
+  const totalTargets = GOALS.reduce((s, g) => s + g.target, 0);
+  const totalProgress = GOALS.reduce((s, g) => s + g.current, 0);
+
+  return (
+    <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+      {/* Summary */}
+      <View style={s.heroCard}>
+        <Text style={s.heroLabel}>Total progress across goals</Text>
+        <Text style={s.heroAmount}>£{totalProgress.toLocaleString('en-GB')}</Text>
+        <View style={[s.barWrap, { marginTop: 14 }]}>
+          <View style={[s.barFill, { width: `${(totalProgress / totalTargets) * 100}%` as any, backgroundColor: C.brandLight }]} />
+        </View>
+        <Text style={s.heroBadgeText2}>
+          {((totalProgress / totalTargets) * 100).toFixed(0)}% of £{totalTargets.toLocaleString('en-GB')} total
+        </Text>
+      </View>
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 20, marginTop: 22, marginBottom: 12 }}>
+        <Text style={[s.sectionTitle, { marginTop: 0, marginHorizontal: 0, marginBottom: 0 }]}>Financial goals</Text>
+        <Pressable style={s.smallAddBtn} onPress={() => setShowModal(true)}>
+          <Ionicons name="add" size={16} color="#fff" />
+        </Pressable>
+      </View>
+
+      {GOALS.map((g) => {
+        const pct = Math.min((g.current / g.target) * 100, 100);
+        const yearly = g.current / Math.max(1, 2025 - 2022);
+        const yearsLeft = Math.max(0, parseInt(g.deadline) - 2025);
+        const projected = g.current + yearly * yearsLeft;
+        const onTrack = projected >= g.target;
+        return (
+          <View key={g.id} style={s.goalCard}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+              <View style={[s.goalIcon, { backgroundColor: g.color + '22' }]}>
+                <Ionicons name={g.icon as any} size={20} color={g.color} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={s.goalName}>{g.name}</Text>
+                <Text style={s.goalDeadline}>Target: {g.deadline}</Text>
+              </View>
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={[s.goalSaved, { color: g.color }]}>£{g.current.toLocaleString('en-GB')}</Text>
+                <Text style={s.goalTarget}>of £{g.target.toLocaleString('en-GB')}</Text>
+              </View>
+            </View>
+            <View style={s.barWrap}>
+              <View style={[s.barFill, { width: `${pct}%` as any, backgroundColor: g.color }]} />
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
+              <Text style={s.pctLabel}>{pct.toFixed(0)}% complete</Text>
+              <View style={[s.trackBadge, { backgroundColor: onTrack ? C.incomeBg : C.warningBg }]}>
+                <Text style={[s.trackBadgeText, { color: onTrack ? C.income : C.warning }]}>
+                  {onTrack ? 'On track' : 'Behind'}
+                </Text>
+              </View>
+            </View>
+          </View>
+        );
+      })}
+
+      {/* Add goal modal */}
+      <Modal visible={showModal} animationType="slide" transparent onRequestClose={() => setShowModal(false)}>
+        <Pressable style={s.overlay} onPress={() => setShowModal(false)}>
+          <Pressable style={s.sheet}>
+            <View style={s.handle} />
+            <Text style={s.sheetTitle}>New Financial Goal</Text>
+
+            <Text style={s.fieldLabel}>Goal name</Text>
+            <TextInput style={s.input} placeholder="e.g. Retire at 60" placeholderTextColor={C.textMuted} value={name} onChangeText={setName} />
+
+            <Text style={s.fieldLabel}>Target (£)</Text>
+            <TextInput style={s.input} placeholder="500000" placeholderTextColor={C.textMuted} keyboardType="numeric" value={target} onChangeText={setTarget} />
+
+            <Text style={s.fieldLabel}>Target year</Text>
+            <TextInput style={s.input} placeholder="2044" placeholderTextColor={C.textMuted} keyboardType="numeric" value={deadline} onChangeText={setDeadline} />
+
+            <Text style={s.fieldLabel}>Colour</Text>
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 20 }}>
+              {COLOR_OPTIONS.map((col) => (
+                <Pressable key={col} style={[s.colorSwatch, { backgroundColor: col }, pickedColor === col && s.colorSwatchActive]} onPress={() => setPickedColor(col)}>
+                  {pickedColor === col && <Ionicons name="checkmark" size={14} color="#fff" />}
+                </Pressable>
+              ))}
+            </View>
+
+            <Pressable style={[s.saveBtn, (!name.trim() || !target.trim()) && { opacity: 0.4 }]} onPress={() => setShowModal(false)} disabled={!name.trim() || !target.trim()}>
+              <Text style={s.saveBtnText}>Create Goal</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
+    </ScrollView>
+  );
+}
+
+// ─── Styles ──────────────────────────────────────────────────────────────────
+
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 20, paddingBottom: 8 },
+  content: { height:570 },
+
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, height: 80 },
   title: { fontSize: 24, fontWeight: '700', color: C.textPrimary },
   sub: { fontSize: 13, color: C.textMuted, marginTop: 2 },
   iconBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.card, borderWidth: 1, borderColor: C.border, alignItems: 'center', justifyContent: 'center' },
 
-  totalCard: { marginHorizontal: 20, marginTop: 16, backgroundColor: C.brand, borderRadius: 20, padding: 22 },
-  totalLabel: { fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: '500', marginBottom: 4 },
-  totalAmount: { fontSize: 34, fontWeight: '700', color: '#fff', marginBottom: 10 },
-  totalBadge: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', backgroundColor: C.incomeBg, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  totalBadgeText: { fontSize: 12, fontWeight: '600', color: C.income },
+  tabBar: { borderBottomWidth: 1, borderBottomColor: C.border },
+  tabBarContent: { paddingHorizontal: 16, paddingVertical: 12, gap: 10 },
+  tabPill: { flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 18, paddingVertical: 11, borderRadius: 24, borderWidth: 1.5, borderColor: C.border, backgroundColor: C.card },
+  tabPillActive: { backgroundColor: C.brand, borderColor: C.brand },
+  tabPillText: { fontSize: 14, fontWeight: '600', color: C.textMuted },
+  tabPillTextActive: { color: '#fff' },
 
-  sectionTitle: { fontSize: 16, fontWeight: '600', color: C.textPrimary, marginHorizontal: 20, marginTop: 22, marginBottom: 12 },
+  heroCard: { marginHorizontal: 20, marginTop: 18, backgroundColor: C.brand, borderRadius: 20, padding: 22 },
+  heroLabel: { fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: '500', marginBottom: 4 },
+  heroAmount: { fontSize: 34, fontWeight: '700', color: '#fff', marginBottom: 10 },
+  heroBadge: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', backgroundColor: C.incomeBg, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  heroBadgeText: { fontSize: 12, fontWeight: '600', color: C.income },
+  heroBadgeText2: { fontSize: 12, color: 'rgba(255,255,255,0.65)', marginTop: 6 },
 
-  breakdownCard: { marginHorizontal: 20, backgroundColor: C.card, borderRadius: 18, borderWidth: 1, borderColor: C.border, padding: 18, gap: 14 },
-  breakdownRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  breakdownDot: { width: 10, height: 10, borderRadius: 5 },
+  sectionTitle: { fontSize: 15, fontWeight: '600', color: C.textPrimary, marginHorizontal: 20, marginTop: 22, marginBottom: 12 },
+
+  card: { marginHorizontal: 20, backgroundColor: C.card, borderRadius: 18, borderWidth: 1, borderColor: C.border, padding: 18 },
+
+  breakdownRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 14 },
+  dot: { width: 10, height: 10, borderRadius: 5 },
   breakdownType: { fontSize: 13, fontWeight: '500', color: C.textSecondary, width: 88 },
-  breakdownBarWrap: { flex: 1, height: 8, backgroundColor: C.border, borderRadius: 4, overflow: 'hidden' },
-  breakdownBar: { height: '100%', borderRadius: 4, overflow: 'hidden' },
-  breakdownBarFill: { height: '100%', borderRadius: 4 },
+  barWrap: { flex: 1, height: 6, backgroundColor: C.border, borderRadius: 3, overflow: 'hidden' },
+  barFill: { height: '100%', borderRadius: 3 },
   breakdownPct: { fontSize: 12, color: C.textMuted, width: 38, textAlign: 'right' },
-  breakdownVal: { fontSize: 12, fontWeight: '600', color: C.textPrimary, width: 64, textAlign: 'right' },
+  breakdownVal: { fontSize: 12, fontWeight: '600', color: C.textPrimary, width: 60, textAlign: 'right' },
 
   filterPill: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5, borderColor: C.border, backgroundColor: C.card },
   filterPillActive: { backgroundColor: C.brand, borderColor: C.brand },
@@ -183,12 +604,85 @@ const s = StyleSheet.create({
 
   holdingCard: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: 20, marginBottom: 10, backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, padding: 14 },
   holdingIcon: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
-  holdingNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 },
   holdingName: { fontSize: 14, fontWeight: '600', color: C.textPrimary },
   holdingTicker: { fontSize: 12, color: C.textMuted },
   typeBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
   typeBadgeText: { fontSize: 10, fontWeight: '600' },
-  holdingRight: { alignItems: 'flex-end' },
   holdingValue: { fontSize: 15, fontWeight: '700', color: C.textPrimary },
   holdingChange: { fontSize: 12, fontWeight: '600', marginTop: 2 },
+
+  sourceCard: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: 20, marginBottom: 10, backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, padding: 14 },
+  sourceIcon: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
+  sourceName: { fontSize: 14, fontWeight: '600', color: C.textPrimary },
+  sourceSub: { fontSize: 12, color: C.textMuted, marginTop: 2 },
+  connectedBadge: { backgroundColor: C.incomeBg, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
+  connectedBadgeText: { fontSize: 11, fontWeight: '600', color: C.income },
+
+  outlineBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginHorizontal: 20, paddingVertical: 14, borderRadius: 14, borderWidth: 1.5, borderColor: C.brandBorder, backgroundColor: C.brandBg },
+  outlineBtnText: { fontSize: 14, fontWeight: '600', color: C.brandLight },
+
+  uploadCard: { marginHorizontal: 20, backgroundColor: C.card, borderRadius: 18, borderWidth: 1, borderColor: C.border, padding: 24, alignItems: 'center', gap: 8 },
+  uploadIconWrap: { width: 60, height: 60, borderRadius: 30, backgroundColor: C.brandBg, borderWidth: 1, borderColor: C.brandBorder, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  uploadTitle: { fontSize: 15, fontWeight: '600', color: C.textPrimary },
+  uploadSub: { fontSize: 13, color: C.textMuted, textAlign: 'center', lineHeight: 20 },
+  uploadBtn: { marginTop: 8, backgroundColor: C.brand, paddingHorizontal: 24, paddingVertical: 10, borderRadius: 20 },
+  uploadBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+
+  riskCircle: { width: 72, height: 72, borderRadius: 36, borderWidth: 3, alignItems: 'center', justifyContent: 'center' },
+  riskNumber: { fontSize: 26, fontWeight: '800' },
+  riskMax: { fontSize: 11, color: C.textMuted, marginTop: -4 },
+  riskLabel: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  riskDesc: { fontSize: 12, color: C.textMuted, lineHeight: 18 },
+  scaleLabel: { fontSize: 10, color: C.textMuted },
+
+  divRow: { marginBottom: 16 },
+  divLabel: { fontSize: 13, fontWeight: '500', color: C.textSecondary },
+  divScore: { fontSize: 13, fontWeight: '700' },
+  divNote: { fontSize: 11, color: C.textMuted, marginTop: 5 },
+
+  insightRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginHorizontal: 20, marginBottom: 10, backgroundColor: C.card, borderRadius: 14, borderWidth: 1, borderColor: C.border, borderLeftWidth: 3, padding: 14 },
+  insightText: { flex: 1, fontSize: 13, color: C.textSecondary, lineHeight: 20 },
+
+  perfRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: C.border },
+  perfLabel: { fontSize: 13, color: C.textSecondary },
+  perfVal: { fontSize: 14, fontWeight: '700' },
+
+  adviserCard: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: 20, marginBottom: 10, backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, padding: 14 },
+  adviserAvatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  adviserAvatarText: { fontSize: 14, fontWeight: '700' },
+  adviserName: { fontSize: 14, fontWeight: '600', color: C.textPrimary },
+  adviserRole: { fontSize: 12, color: C.textMuted, marginTop: 2 },
+  statusDot: { width: 8, height: 8, borderRadius: 4 },
+  statusText: { fontSize: 12, fontWeight: '600' },
+
+  commentCard: { marginHorizontal: 20, marginBottom: 10, backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, padding: 16 },
+  commentAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: C.brandBg, borderWidth: 1, borderColor: C.brandBorder, alignItems: 'center', justifyContent: 'center' },
+  commentAvatarText: { fontSize: 12, fontWeight: '700', color: C.brandLight },
+  commentAuthor: { fontSize: 13, fontWeight: '600', color: C.textPrimary },
+  commentMeta: { fontSize: 11, color: C.textMuted, marginTop: 1 },
+  commentText: { fontSize: 13, color: C.textSecondary, lineHeight: 20 },
+
+  shareDesc: { fontSize: 13, color: C.textSecondary, lineHeight: 20, marginBottom: 16 },
+
+  goalCard: { marginHorizontal: 20, marginBottom: 12, backgroundColor: C.card, borderRadius: 18, borderWidth: 1, borderColor: C.border, padding: 18 },
+  goalIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  goalName: { fontSize: 15, fontWeight: '600', color: C.textPrimary },
+  goalDeadline: { fontSize: 12, color: C.textMuted, marginTop: 2 },
+  goalSaved: { fontSize: 16, fontWeight: '700' },
+  goalTarget: { fontSize: 11, color: C.textMuted, marginTop: 1 },
+  pctLabel: { fontSize: 11, color: C.textMuted },
+  trackBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 10 },
+  trackBadgeText: { fontSize: 11, fontWeight: '600' },
+  smallAddBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: C.brand, alignItems: 'center', justifyContent: 'center' },
+
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+  sheet: { backgroundColor: C.card, borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 48 },
+  handle: { width: 40, height: 4, backgroundColor: C.border, borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
+  sheetTitle: { fontSize: 18, fontWeight: '700', color: C.textPrimary, marginBottom: 18 },
+  fieldLabel: { fontSize: 11, fontWeight: '600', color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
+  input: { backgroundColor: C.bg, borderWidth: 1.5, borderColor: C.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, color: C.textPrimary, marginBottom: 16 },
+  saveBtn: { backgroundColor: C.brand, borderRadius: 14, paddingVertical: 15, alignItems: 'center' },
+  saveBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  colorSwatch: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  colorSwatchActive: { borderWidth: 3, borderColor: '#fff' },
 });
