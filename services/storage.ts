@@ -149,7 +149,13 @@ export async function bulkUpdateCategory(ids: string[], category: string): Promi
 }
 
 export async function clearAllData(): Promise<void> {
-  await AsyncStorage.multiRemove([TRANSACTIONS_KEY, MEMORY_KEY, BATCHES_KEY]);
+  await AsyncStorage.multiRemove([
+    TRANSACTIONS_KEY,
+    MEMORY_KEY,
+    BATCHES_KEY,
+    CUSTOM_COLORS_KEY,
+    'connected_banks',
+  ]);
 }
 
 export async function loadCustomCategoryColors(): Promise<Record<string, string>> {
