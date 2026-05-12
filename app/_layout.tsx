@@ -10,13 +10,15 @@ function RootLayoutNav() {
 
   useEffect(() => {
     if (loading) return;
-    const inTabs = segments[0] === '(tabs)';
-    const inLogin = (segments[0] as string) === 'login';
-    const inRegister = (segments[0] as string) === 'register';
+    const seg0 = segments[0] as string;
+    const inTabs = seg0 === '(tabs)';
+    const inLogin = seg0 === 'login';
+    const inRegister = seg0 === 'register';
+    const inProfile = seg0 === 'profile';
 
     if (!user && !inLogin && !inRegister) {
       router.replace('/login');
-    } else if (user && (inLogin || inRegister || !inTabs)) {
+    } else if (user && (inLogin || inRegister || (!inTabs && !inProfile))) {
       router.replace('/(tabs)');
     }
   }, [user, loading]);
@@ -33,6 +35,7 @@ function RootLayoutNav() {
         <Stack.Screen name="login" />
         <Stack.Screen name="register" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="profile" options={{ headerShown: false }} />
         <Stack.Screen
           name="connect-bank"
           options={{

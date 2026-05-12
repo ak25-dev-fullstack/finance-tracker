@@ -9,7 +9,6 @@ import {
   RefreshControl,
   Modal,
   TextInput,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -22,13 +21,16 @@ import { CONNECTED_BANKS_KEY, ConnectedBank } from '@/app/connect-bank';
 import {
   loadTransactions,
   updateTransactionCategory,
+  updateTransactionName,
   deleteTransaction,
   bulkUpdateCategory,
   clearAllData,
+  loadCustomCategoryColors,
+  saveCustomCategoryColor,
   Transaction,
 } from '@/services/storage';
 import { CATEGORIES, runAgentCommand } from '@/services/categorizer';
-import { C, getCategoryColor } from '@/constants/theme';
+import { C, getCategoryColor, COLOR_PALETTE } from '@/constants/theme';
 import { useAuth } from '@/context/auth';
 
 export default function Index() {
@@ -39,20 +41,32 @@ export default function Index() {
   const [editing, setEditing] = useState<Transaction | null>(null);
   const [editCategory, setEditCategory] = useState('');
   const [customCategory, setCustomCategory] = useState('');
+  const [editName, setEditName] = useState('');
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [agentInput, setAgentInput] = useState('');
   const [agentLoading, setAgentLoading] = useState(false);
   const [agentResult, setAgentResult] = useState<{ ok: boolean; text: string } | null>(null);
   const [showAgent, setShowAgent] = useState(false);
 
   const [connectedBanks, setConnectedBanks] = useState<ConnectedBank[]>([]);
+  const [customColors, setCustomColors] = useState<Record<string, string>>({});
 
-  const load = async () => {
-    setTransactions(await loadTransactions());
-    const raw = await AsyncStorage.getItem(CONNECTED_BANKS_KEY);
+  const catColor = (cat: string) => getCategoryColor(cat, customColors);
+
+  const load = useCallback(async () => {
+    const [txs, raw, colors] = await Promise.all([
+      loadTransactions(),
+      AsyncStorage.getItem(CONNECTED_BANKS_KEY),
+      loadCustomCategoryColors(),
+    ]);
+    setTransactions(txs);
     setConnectedBanks(raw ? JSON.parse(raw) : []);
-  };
+    setCustomColors(colors);
+  }, []);
 
-  useFocusEffect(useCallback(() => { load(); }, []));
+  useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const onRefresh = async () => { setRefreshing(true); await load(); setRefreshing(false); };
 
@@ -60,23 +74,60 @@ export default function Index() {
     setEditing(t);
     setEditCategory(t.category);
     setCustomCategory(CATEGORIES.includes(t.category as any) ? '' : t.category);
+    setEditName(t.description);
+    setShowColorPicker(false);
+    setConfirmDelete(false);
+  };
+
+  const handlePickColor = async (color: string) => {
+    const cat = customCategory.trim() || editCategory;
+    if (!cat) return;
+    await saveCustomCategoryColor(cat, color);
+    setCustomColors((prev) => ({ ...prev, [cat]: color }));
   };
 
   const handleSaveEdit = async () => {
     if (!editing) return;
     const finalCategory = customCategory.trim() || editCategory;
+    const finalName = editName.trim() || editing.description;
     if (!finalCategory) return;
-    await updateTransactionCategory(editing.id, finalCategory);
+    await Promise.all([
+      updateTransactionCategory(editing.id, finalCategory),
+      finalName !== editing.description ? updateTransactionName(editing.id, finalName) : Promise.resolve(),
+    ]);
     setEditing(null);
     await load();
   };
 
-  const handleDelete = () => {
+  const handleSaveAll = async () => {
     if (!editing) return;
-    Alert.alert('Delete transaction', `Remove "${editing.description}"?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: async () => { await deleteTransaction(editing.id); setEditing(null); await load(); } },
-    ]);
+    const finalCategory = customCategory.trim() || editCategory;
+    if (!finalCategory) return;
+    const needle = editing.description.toLowerCase().trim();
+    const ids = transactions
+      .filter((t) => t.description.toLowerCase().trim() === needle)
+      .map((t) => t.id);
+    await bulkUpdateCategory(ids, finalCategory);
+    setEditing(null);
+    await load();
+  };
+
+  const handleDelete = async () => {
+    if (!editing) return;
+    setDeleting(true);
+    const id = editing.id;
+    // Optimistic update — remove from UI immediately
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
+    setEditing(null);
+    setConfirmDelete(false);
+    try {
+      await deleteTransaction(id);
+    } catch {
+      // Rollback on failure
+      await load();
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const handleAgentCommand = async () => {
@@ -89,7 +140,28 @@ export default function Index() {
         id: t.id, description: t.description, amount: t.amount, type: t.type, category: t.category,
       }));
       const action = await runAgentCommand(cmd, txForAgent as any);
-      if (action.action === 'bulk_rename' && action.newCategory && action.filter) {
+
+      if (action.action === 'rename_description' && action.id && action.newDescription) {
+        const target = transactions.find((t) => t.id === action.id);
+        if (!target) {
+          setAgentResult({ ok: false, text: 'Could not find that transaction.' });
+        } else {
+          await updateTransactionName(action.id, action.newDescription);
+          await load();
+          setAgentInput('');
+          setAgentResult({ ok: true, text: action.message ?? `Renamed "${target.description}" → "${action.newDescription}"` });
+        }
+      } else if (action.action === 'single_rename' && action.id && action.newCategory) {
+        const target = transactions.find((t) => t.id === action.id);
+        if (!target) {
+          setAgentResult({ ok: false, text: 'Could not find that specific transaction.' });
+        } else {
+          await updateTransactionCategory(action.id, action.newCategory);
+          await load();
+          setAgentInput('');
+          setAgentResult({ ok: true, text: action.message ?? `Renamed "${target.description}" (£${target.amount.toFixed(2)}) to ${action.newCategory}` });
+        }
+      } else if (action.action === 'bulk_rename' && action.newCategory && action.filter) {
         let ids: string[];
         if (action.filter.all) {
           ids = transactions.map((t) => t.id);
@@ -126,6 +198,9 @@ export default function Index() {
   const isCustomActive = !!customCategory.trim();
   const activeCategory = isCustomActive ? customCategory.trim() : editCategory;
   const recent = [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+  const matchCount = editing
+    ? transactions.filter((t) => t.description.toLowerCase().trim() === editing.description.toLowerCase().trim()).length
+    : 0;
 
   return (
     <SafeAreaView style={s.container}>
@@ -145,10 +220,7 @@ export default function Index() {
             <View style={s.headerActions}>
               <TouchableOpacity
                 style={s.avatarBtn}
-                onPress={() => Alert.alert(user?.name ?? 'Account', user?.email ?? '', [
-                  { text: 'Clear all data', style: 'destructive', onPress: async () => { await clearAllData(); await load(); } },
-                  { text: 'Cancel', style: 'cancel' },
-                ])}
+                onPress={() => router.push('/profile')}
               >
                 <Ionicons name="person" size={18} color={C.brandLight} />
               </TouchableOpacity>
@@ -275,8 +347,8 @@ export default function Index() {
             ) : (
               recent.map((t) => (
                 <TouchableOpacity key={t.id} style={s.txRow} onPress={() => openEdit(t)}>
-                  <View style={[s.txIcon, { backgroundColor: getCategoryColor(t.category) + '22' }]}>
-                    <Text style={[s.txIconLetter, { color: getCategoryColor(t.category) }]}>
+                  <View style={[s.txIcon, { backgroundColor: catColor(t.category) + '22' }]}>
+                    <Text style={[s.txIconLetter, { color: catColor(t.category) }]}>
                       {t.category.charAt(0).toUpperCase()}
                     </Text>
                   </View>
@@ -365,6 +437,17 @@ export default function Index() {
               </Text>
             </View>
 
+            <Text style={s.sheetLabel}>Name</Text>
+            <TextInput
+              style={s.nameInput}
+              value={editName}
+              onChangeText={setEditName}
+              placeholder="Transaction name"
+              placeholderTextColor={C.textMuted}
+              selectionColor={C.brand}
+              underlineColorAndroid="transparent"
+            />
+
             <Text style={s.sheetLabel}>Category</Text>
             <View style={s.pills}>
               {CATEGORIES.filter((c) => c !== 'Other').map((cat) => (
@@ -384,12 +467,69 @@ export default function Index() {
               value={customCategory}
               onChangeText={setCustomCategory}
             />
-            <TouchableOpacity style={s.saveBtn} onPress={handleSaveEdit}>
-              <Text style={s.saveBtnText}>Save Changes</Text>
+
+            {/* Category colour */}
+            <TouchableOpacity style={s.colorRow} onPress={() => setShowColorPicker((v) => !v)}>
+              <View style={[s.colorDot, { backgroundColor: catColor(activeCategory) }]} />
+              <Text style={s.colorRowLabel}>Category colour</Text>
+              <Ionicons name={showColorPicker ? 'chevron-up' : 'chevron-down'} size={14} color={C.textMuted} />
             </TouchableOpacity>
-            <TouchableOpacity style={s.deleteBtn} onPress={handleDelete}>
-              <Text style={s.deleteBtnText}>Delete Transaction</Text>
-            </TouchableOpacity>
+            {showColorPicker && (
+              <View style={s.colorGrid}>
+                {COLOR_PALETTE.map((col) => {
+                  const selected = catColor(activeCategory) === col;
+                  return (
+                    <TouchableOpacity key={col} onPress={() => handlePickColor(col)} style={[s.colorSwatch, { backgroundColor: col }, selected && s.colorSwatchSelected]}>
+                      {selected && <Ionicons name="checkmark" size={14} color="#fff" />}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
+
+            {/* Save scope — single vs all */}
+            <View style={s.saveScopeRow}>
+              <TouchableOpacity style={s.saveScopeBtn} onPress={handleSaveEdit}>
+                <Ionicons name="bookmark-outline" size={15} color={C.brand} style={{ marginBottom: 4 }} />
+                <Text style={s.saveScopeBtnText}>This transaction</Text>
+                <Text style={s.saveScopeBtnSub}>only this one</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[s.saveScopeBtn, matchCount > 1 ? s.saveScopeBtnAll : s.saveScopeBtnDisabled]}
+                onPress={handleSaveAll}
+                disabled={matchCount <= 1}
+              >
+                <Ionicons name="layers-outline" size={15} color={matchCount > 1 ? C.brandLight : C.textMuted} style={{ marginBottom: 4 }} />
+                <Text style={[s.saveScopeBtnText, matchCount <= 1 && { color: C.textMuted }]}>
+                  All "{editing?.description}"
+                </Text>
+                <Text style={[s.saveScopeBtnSub, matchCount <= 1 && { color: C.textMuted }]}>
+                  {matchCount} transaction{matchCount !== 1 ? 's' : ''}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {!confirmDelete ? (
+              <TouchableOpacity style={s.deleteBtn} onPress={() => setConfirmDelete(true)}>
+                <Ionicons name="trash-outline" size={15} color={C.destructive} style={{ marginRight: 6 }} />
+                <Text style={s.deleteBtnText}>Delete Transaction</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={s.deleteConfirmRow}>
+                <Text style={s.deleteConfirmText}>Remove this transaction?</Text>
+                <View style={s.deleteConfirmBtns}>
+                  <TouchableOpacity style={s.deleteCancelBtn} onPress={() => setConfirmDelete(false)}>
+                    <Text style={s.deleteCancelText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={s.deleteConfirmBtn} onPress={handleDelete} disabled={deleting}>
+                    {deleting
+                      ? <ActivityIndicator size="small" color="#fff" />
+                      : <Text style={s.deleteConfirmBtnText}>Delete</Text>
+                    }
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
@@ -488,11 +628,31 @@ const s = StyleSheet.create({
   pillText: { fontSize: 12, fontWeight: '500', color: C.textSecondary },
   pillTextActive: { color: '#fff', fontWeight: '600' },
 
-  customInput: { borderWidth: 1.5, borderColor: C.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, color: C.textPrimary, backgroundColor: C.bg, marginBottom: 16 },
+  nameInput: { borderWidth: 1.5, borderColor: C.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, fontSize: 15, color: C.textPrimary, backgroundColor: C.bg, marginBottom: 16, outlineWidth: 0 } as any,
+  customInput: { borderWidth: 1.5, borderColor: C.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, color: C.textPrimary, backgroundColor: C.bg, marginBottom: 12 },
   customInputActive: { borderColor: C.brand },
 
-  saveBtn: { backgroundColor: C.brand, padding: 15, borderRadius: 14, alignItems: 'center', marginBottom: 10 },
-  saveBtnText: { color: '#fff', fontSize: 15, fontWeight: '600' },
-  deleteBtn: { padding: 14, alignItems: 'center' },
-  deleteBtnText: { color: C.expense, fontSize: 14, fontWeight: '500' },
+  colorRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, marginBottom: 4 },
+  colorDot: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: 'rgba(255,255,255,0.25)' },
+  colorRowLabel: { flex: 1, fontSize: 13, fontWeight: '600', color: C.textSecondary },
+  colorGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
+  colorSwatch: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  colorSwatchSelected: { borderWidth: 3, borderColor: '#fff' },
+
+  saveScopeRow: { flexDirection: 'row', gap: 10, marginBottom: 10 },
+  saveScopeBtn: { flex: 1, alignItems: 'center', paddingVertical: 14, paddingHorizontal: 10, borderRadius: 14, borderWidth: 1.5, borderColor: C.brandBorder, backgroundColor: C.brandBg },
+  saveScopeBtnAll: { borderColor: C.brandBorder, backgroundColor: C.brandBg },
+  saveScopeBtnDisabled: { borderColor: C.border, backgroundColor: C.bg },
+  saveScopeBtnText: { fontSize: 13, fontWeight: '700', color: C.brand, textAlign: 'center' },
+  saveScopeBtnSub: { fontSize: 11, color: C.textMuted, marginTop: 2, textAlign: 'center' },
+  deleteBtn: { flexDirection: 'row', padding: 14, alignItems: 'center', justifyContent: 'center' },
+  deleteBtnText: { color: C.destructive, fontSize: 14, fontWeight: '500' },
+
+  deleteConfirmRow: { marginTop: 4, borderRadius: 14, borderWidth: 1.5, borderColor: C.destructive, padding: 14, backgroundColor: C.destructiveLight },
+  deleteConfirmText: { fontSize: 13, color: C.textSecondary, textAlign: 'center', marginBottom: 12 },
+  deleteConfirmBtns: { flexDirection: 'row', gap: 10 },
+  deleteCancelBtn: { flex: 1, paddingVertical: 11, borderRadius: 10, borderWidth: 1.5, borderColor: C.border, alignItems: 'center' },
+  deleteCancelText: { fontSize: 14, fontWeight: '600', color: C.textSecondary },
+  deleteConfirmBtn: { flex: 1, paddingVertical: 11, borderRadius: 10, backgroundColor: C.destructive, alignItems: 'center' },
+  deleteConfirmBtnText: { fontSize: 14, fontWeight: '700', color: '#fff' },
 });
