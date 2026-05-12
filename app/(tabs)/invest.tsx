@@ -62,11 +62,11 @@ const ADVISER_COMMENTS = [
 
 // ─── Sub-tab types ───────────────────────────────────────────────────────────
 
-type Tab = 'portfolio' | 'invest' | 'insights' | 'adviser' | 'goals';
+type Tab = 'portfolio' | 'upload' | 'insights' | 'adviser' | 'goals';
 
 const TABS: { key: Tab; label: string; icon: string }[] = [
   { key: 'portfolio', label: 'Portfolio', icon: 'pie-chart-outline' },
-  { key: 'invest', label: 'Invest', icon: 'add-circle-outline' },
+  { key: 'upload', label: 'Upload', icon: 'add-circle-outline' },
   { key: 'insights', label: 'Insights', icon: 'bulb-outline' },
   { key: 'adviser', label: 'Adviser', icon: 'people-outline' },
   { key: 'goals', label: 'Goals', icon: 'flag-outline' },
@@ -105,7 +105,7 @@ export default function InvestScreen() {
       {/* Content */}
       <View style={s.content}>
         {tab === 'portfolio' && <PortfolioTab total={total} />}
-        {tab === 'invest'    && <InvestTab />}
+        {tab === 'upload'    && <UploadTab />}
         {tab === 'insights'  && <InsightsTab total={total} />}
         {tab === 'adviser'   && <AdviserTab />}
         {tab === 'goals'     && <GoalsTab />}
@@ -198,9 +198,9 @@ function PortfolioTab({ total }: { total: number }) {
   );
 }
 
-// ─── Invest tab ──────────────────────────────────────────────────────────────
+// ─── Upload tab ──────────────────────────────────────────────────────────────
 
-function InvestTab() {
+function UploadTab() {
   const [showManual, setShowManual] = useState(false);
   const [manualName, setManualName] = useState('');
   const [manualTicker, setManualTicker] = useState('');

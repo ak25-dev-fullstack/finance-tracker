@@ -42,6 +42,7 @@ export default function TabLayout() {
         name="invest"
         options={{
           title: 'Invest',
+          tabBarLabel: 'Invest',
           tabBarIcon: ({ color, size }) => <Ionicons name="trending-up-outline" size={size} color={color} />,
         }}
       />
