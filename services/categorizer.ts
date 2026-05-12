@@ -141,9 +141,11 @@ export async function categorize(
 }
 
 export interface AgentAction {
-  action: 'bulk_rename' | 'none';
+  action: 'single_rename' | 'bulk_rename' | 'rename_description' | 'none';
+  id?: string;
   filter?: { description?: string; category?: string; all?: boolean };
   newCategory?: string;
+  newDescription?: string;
   message: string;
 }
 
@@ -158,20 +160,20 @@ export async function runAgentCommand(
 
   const data = await claudeFetch({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 256,
+    max_tokens: 300,
     messages: [{
       role: 'user',
-      content: `You manage personal finance transactions. The user has these transactions (id|description|category|amount|type):\n${txLines}\n\nUser command: "${command}"\n\nRespond ONLY with a JSON object — no other text.\n\nSupported actions:\n1. Bulk rename matching transactions:\n{"action":"bulk_rename","filter":{"description":"substring"},"newCategory":"Name","message":"..."}\n   OR filter by category: {"action":"bulk_rename","filter":{"category":"OldName"},"newCategory":"Name","message":"..."}\n   OR all transactions: {"action":"bulk_rename","filter":{"all":true},"newCategory":"Name","message":"..."}\n2. Cannot understand: {"action":"none","message":"hint for user"}\n\nRules:\n- filter.description is a lowercase substring matched case-insensitively against descriptions\n- "rename all of these to X" means all:true\n- message describes what will happen or explains the problem`,
+      content: `You manage personal finance transactions. The user has these transactions (id|description|category|amount|type):\n${txLines}\n\nUser command: "${command}"\n\nRespond ONLY with a JSON object — no other text.\n\nSupported actions:\n\n1. Change category of ONE specific transaction (user mentions an amount or says "the £X one"):\n{"action":"single_rename","id":"exact-id","newCategory":"Category","message":"..."}\n\n2. Change category of ALL matching transactions (user says "all X" or merchant name only, no amount):\n{"action":"bulk_rename","filter":{"description":"substring"},"newCategory":"Category","message":"..."}\n   OR by category: {"action":"bulk_rename","filter":{"category":"OldName"},"newCategory":"Category","message":"..."}\n   OR all: {"action":"bulk_rename","filter":{"all":true},"newCategory":"Category","message":"..."}\n\n3. Change the NAME/DESCRIPTION of a specific transaction (user says "rename ... to ..." where the new value is a name, not a category):\n{"action":"rename_description","id":"exact-id","newDescription":"New Name","message":"..."}\n\n4. Cannot understand:\n{"action":"none","message":"hint for user"}\n\nCRITICAL RULES:\n- If the user specifies an amount (e.g. "£62.45") → use single_rename or rename_description with the matching id\n- If the user wants to change what the transaction is CALLED (its name/label) → use rename_description\n- If the user wants to change the CATEGORY → use single_rename or bulk_rename\n- filter.description is matched case-insensitively as a substring\n- message describes what will happen`,
     }],
   });
 
   const text: string = data.content[0].text;
   const match = text.match(/\{[\s\S]*\}/);
-  if (!match) return { action: 'none', message: "Couldn't understand that. Try: 'rename all McDonald's to Eating Out'" };
+  if (!match) return { action: 'none', message: "Couldn't understand that. Try: 'rename Tesco £62.45 to Shopping' or 'rename all Tesco to Groceries'" };
   try {
     return JSON.parse(match[0]) as AgentAction;
   } catch {
-    return { action: 'none', message: "Couldn't understand that. Try: 'rename all McDonald's to Eating Out'" };
+    return { action: 'none', message: "Couldn't understand that. Try: 'rename Tesco £62.45 to Shopping' or 'rename all Tesco to Groceries'" };
   }
 }
 

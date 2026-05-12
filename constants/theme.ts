@@ -20,10 +20,10 @@ export const C = {
   incomeBg: 'rgba(34,197,94,0.12)',
   incomeBorder: 'rgba(34,197,94,0.3)',
   incomeText: '#4ADE80',
-  expense: '#EF4444',
-  expenseBg: 'rgba(239,68,68,0.12)',
-  expenseBorder: 'rgba(239,68,68,0.3)',
-  expenseText: '#F87171',
+  expense: '#F8FAFC',
+  expenseBg: 'rgba(248,250,252,0.08)',
+  expenseBorder: 'rgba(248,250,252,0.2)',
+  expenseText: '#F8FAFC',
   balance: '#6bd8cb',
   balanceBg: 'rgba(107,216,203,0.12)',
   balanceBorder: 'rgba(107,216,203,0.3)',
@@ -63,6 +63,14 @@ function djb2(str: string): number {
   return Math.abs(h);
 }
 
-export function getCategoryColor(category: string): string {
-  return CATEGORY_COLORS[category] ?? FALLBACK_PALETTE[djb2(category) % FALLBACK_PALETTE.length];
+export function getCategoryColor(category: string, custom: Record<string, string> = {}): string {
+  return custom[category] ?? CATEGORY_COLORS[category] ?? FALLBACK_PALETTE[djb2(category) % FALLBACK_PALETTE.length];
 }
+
+export const COLOR_PALETTE = [
+  '#FF7043','#EF5350','#EC407A','#AB47BC',
+  '#7E57C2','#5C6BC0','#42A5F5','#26C6DA',
+  '#26A69A','#66BB6A','#CDDC39','#FFCA28',
+  '#FFA726','#FF5722','#8D6E63','#78909C',
+  '#F06292','#80CBC4','#CE93D8','#90CAF9',
+];

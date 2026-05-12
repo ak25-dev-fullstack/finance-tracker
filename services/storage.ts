@@ -24,6 +24,7 @@ export type CategoryMemory = Record<string, string>;
 const TRANSACTIONS_KEY = 'transactions_v2';
 const MEMORY_KEY = 'category_memory';
 const BATCHES_KEY = 'import_batches';
+const CUSTOM_COLORS_KEY = 'category_colors_v1';
 
 export async function loadTransactions(): Promise<Transaction[]> {
   try {
@@ -46,7 +47,12 @@ export async function appendTransactions(incoming: Transaction[]): Promise<numbe
   const existing = await loadTransactions();
   const existingIds = new Set(existing.map((t) => t.id));
   const existingKeys = new Set(existing.map(txContentKey));
-  const toAdd = incoming.filter((t) => !existingIds.has(t.id) && !existingKeys.has(txContentKey(t)));
+  const toAdd = incoming.filter((t) => {
+    if (existingIds.has(t.id)) return false;
+    // manual transactions are always unique — only CSV imports need content dedup
+    if (t.source === 'manual') return true;
+    return !existingKeys.has(txContentKey(t));
+  });
   await saveTransactions([...existing, ...toAdd]);
   return toAdd.length;
 }
@@ -78,9 +84,16 @@ export async function updateTransactionCategory(id: string, category: string): P
   await saveTransactions(transactions.map((t) => (t.id === id ? { ...t, category } : t)));
 }
 
+export async function updateTransactionName(id: string, description: string): Promise<void> {
+  const transactions = await loadTransactions();
+  await saveTransactions(transactions.map((t) => (t.id === id ? { ...t, description } : t)));
+}
+
 export async function deleteTransaction(id: string): Promise<void> {
   const transactions = await loadTransactions();
-  await saveTransactions(transactions.filter((t) => t.id !== id));
+  const filtered = transactions.filter((t) => t.id !== id);
+  if (filtered.length === transactions.length) return; // id not found — nothing to do
+  await saveTransactions(filtered);
 }
 
 export async function loadImportBatches(): Promise<ImportBatch[]> {
@@ -137,4 +150,16 @@ export async function bulkUpdateCategory(ids: string[], category: string): Promi
 
 export async function clearAllData(): Promise<void> {
   await AsyncStorage.multiRemove([TRANSACTIONS_KEY, MEMORY_KEY, BATCHES_KEY]);
+}
+
+export async function loadCustomCategoryColors(): Promise<Record<string, string>> {
+  try {
+    const data = await AsyncStorage.getItem(CUSTOM_COLORS_KEY);
+    return data ? JSON.parse(data) : {};
+  } catch { return {}; }
+}
+
+export async function saveCustomCategoryColor(category: string, color: string): Promise<void> {
+  const existing = await loadCustomCategoryColors();
+  await AsyncStorage.setItem(CUSTOM_COLORS_KEY, JSON.stringify({ ...existing, [category]: color }));
 }

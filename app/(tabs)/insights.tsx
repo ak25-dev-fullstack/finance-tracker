@@ -13,7 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { useFocusEffect } from '@react-navigation/native';
-import { loadTransactions, renameCategory, Transaction } from '@/services/storage';
+import { loadTransactions, renameCategory, loadCustomCategoryColors, Transaction } from '@/services/storage';
 import { generateInsights } from '@/services/categorizer';
 import { C, getCategoryColor } from '@/constants/theme';
 
@@ -112,9 +112,13 @@ export default function Insights() {
   const [insights, setInsights] = useState('');
   const [loadingInsights, setLoadingInsights] = useState(false);
   const [insightsError, setInsightsError] = useState('');
+  const [customColors, setCustomColors] = useState<Record<string, string>>({});
+
+  const catColor = (cat: string) => getCategoryColor(cat, customColors);
 
   useFocusEffect(useCallback(() => {
     loadTransactions().then(setTransactions);
+    loadCustomCategoryColors().then(setCustomColors);
     setExpandedCategory(null);
     setRenamingCategory(null);
   }, []));
@@ -141,7 +145,7 @@ export default function Insights() {
   }, [filteredExpenses]);
 
   const categoryData = useMemo(() =>
-    Object.entries(byCategory).sort((a, b) => b[1] - a[1]).map(([label, value]) => ({ label, value, color: getCategoryColor(label) })),
+    Object.entries(byCategory).sort((a, b) => b[1] - a[1]).map(([label, value]) => ({ label, value, color: catColor(label) })),
     [byCategory]
   );
 
