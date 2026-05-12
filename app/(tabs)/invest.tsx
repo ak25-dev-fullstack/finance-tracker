@@ -56,19 +56,13 @@ const GOALS = [
   { id: '3', name: 'Education fund', target: 30000, current: 8200, deadline: '2031', icon: 'school-outline', color: '#AB47BC' },
 ];
 
-const ADVISER_COMMENTS = [
-  { id: '1', author: 'James Whitfield', role: 'Senior Adviser', date: '8 May 2025', text: 'Your equity allocation looks healthy. Consider trimming crypto exposure below 5% to reduce volatility risk.', avatar: 'JW' },
-  { id: '2', author: 'Priya Nair', role: 'Portfolio Analyst', date: '2 May 2025', text: 'The MSCI World ETF is a strong core holding. Worth reviewing the UK Gilts position given current rate expectations.', avatar: 'PN' },
-];
-
 // ─── Sub-tab types ───────────────────────────────────────────────────────────
 
-type Tab = 'portfolio' | 'upload' | 'adviser' | 'goals';
+type Tab = 'portfolio' | 'upload' | 'goals';
 
 const TABS: { key: Tab; label: string; icon: string }[] = [
   { key: 'portfolio', label: 'Portfolio', icon: 'pie-chart-outline' },
   { key: 'goals', label: 'Goals', icon: 'flag-outline' },
-  { key: 'adviser', label: 'Adviser', icon: 'people-outline' },
   { key: 'upload', label: 'Upload', icon: 'add-circle-outline' },
 ];
 
@@ -79,7 +73,7 @@ export default function InvestScreen() {
   const [tab, setTab] = useState<Tab>('portfolio');
 
   useEffect(() => {
-    if (tabParam && (['portfolio', 'goals', 'adviser', 'upload'] as Tab[]).includes(tabParam)) {
+    if (tabParam && (['portfolio', 'goals', 'upload'] as Tab[]).includes(tabParam)) {
       setTab(tabParam);
     }
   }, [tabParam]);
@@ -113,7 +107,6 @@ export default function InvestScreen() {
       <View style={s.content}>
         {tab === 'portfolio' && <PortfolioTab total={total} />}
         {tab === 'goals'     && <GoalsTab />}
-        {tab === 'adviser'   && <AdviserTab />}
         {tab === 'upload'    && <UploadTab />}
       </View>
     </View>
@@ -297,77 +290,6 @@ function UploadTab() {
   );
 }
 
-// ─── Adviser tab ─────────────────────────────────────────────────────────────
-
-function AdviserTab() {
-  const [message, setMessage] = useState('');
-
-  return (
-    <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-      {/* Adviser team */}
-      <Text style={s.sectionTitle}>Your advisory team</Text>
-      {[
-        { name: 'James Whitfield', role: 'Senior Adviser', status: 'Online', avatar: 'JW', color: '#42A5F5' },
-        { name: 'Priya Nair', role: 'Portfolio Analyst', status: 'Away', avatar: 'PN', color: '#AB47BC' },
-      ].map((adv) => (
-        <View key={adv.name} style={s.adviserCard}>
-          <View style={[s.adviserAvatar, { backgroundColor: adv.color + '33' }]}>
-            <Text style={[s.adviserAvatarText, { color: adv.color }]}>{adv.avatar}</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={s.adviserName}>{adv.name}</Text>
-            <Text style={s.adviserRole}>{adv.role}</Text>
-          </View>
-          <View style={[s.statusDot, { backgroundColor: adv.status === 'Online' ? C.income : C.warning }]} />
-          <Text style={[s.statusText, { color: adv.status === 'Online' ? C.income : C.warning }]}>{adv.status}</Text>
-        </View>
-      ))}
-
-      {/* Comments */}
-      <Text style={s.sectionTitle}>Latest comments</Text>
-      {ADVISER_COMMENTS.map((c) => (
-        <View key={c.id} style={s.commentCard}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-            <View style={s.commentAvatar}>
-              <Text style={s.commentAvatarText}>{c.avatar}</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={s.commentAuthor}>{c.author}</Text>
-              <Text style={s.commentMeta}>{c.role} · {c.date}</Text>
-            </View>
-          </View>
-          <Text style={s.commentText}>{c.text}</Text>
-        </View>
-      ))}
-
-      {/* Share portfolio */}
-      <Text style={s.sectionTitle}>Share portfolio</Text>
-      <View style={s.card}>
-        <Text style={s.shareDesc}>Give your adviser a read-only view of your portfolio for personalised recommendations.</Text>
-        <Pressable style={s.saveBtn}>
-          <Text style={s.saveBtnText}>Share portfolio access</Text>
-        </Pressable>
-      </View>
-
-      {/* Message */}
-      <Text style={s.sectionTitle}>Send a message</Text>
-      <View style={s.card}>
-        <TextInput
-          style={[s.input, { height: 88, textAlignVertical: 'top' }]}
-          placeholder="Ask your adviser a question…"
-          placeholderTextColor={C.textMuted}
-          value={message}
-          onChangeText={setMessage}
-          multiline
-        />
-        <Pressable style={[s.saveBtn, { marginTop: 4 }, !message.trim() && { opacity: 0.4 }]} disabled={!message.trim()}>
-          <Text style={s.saveBtnText}>Send message</Text>
-        </Pressable>
-      </View>
-    </ScrollView>
-  );
-}
-
 // ─── Goals tab ───────────────────────────────────────────────────────────────
 
 function GoalsTab() {
@@ -542,22 +464,7 @@ const s = StyleSheet.create({
   uploadBtn: { marginTop: 8, backgroundColor: C.brand, paddingHorizontal: 24, paddingVertical: 10, borderRadius: 20 },
   uploadBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
 
-  adviserCard: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: 20, marginBottom: 10, backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, padding: 14 },
-  adviserAvatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  adviserAvatarText: { fontSize: 14, fontWeight: '700' },
-  adviserName: { fontSize: 14, fontWeight: '600', color: C.textPrimary },
-  adviserRole: { fontSize: 12, color: C.textMuted, marginTop: 2 },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
-  statusText: { fontSize: 12, fontWeight: '600' },
-
-  commentCard: { marginHorizontal: 20, marginBottom: 10, backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, padding: 16 },
-  commentAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: C.brandBg, borderWidth: 1, borderColor: C.brandBorder, alignItems: 'center', justifyContent: 'center' },
-  commentAvatarText: { fontSize: 12, fontWeight: '700', color: C.brandLight },
-  commentAuthor: { fontSize: 13, fontWeight: '600', color: C.textPrimary },
-  commentMeta: { fontSize: 11, color: C.textMuted, marginTop: 1 },
-  commentText: { fontSize: 13, color: C.textSecondary, lineHeight: 20 },
-
-  shareDesc: { fontSize: 13, color: C.textSecondary, lineHeight: 20, marginBottom: 16 },
+  fieldLabel: { fontSize: 11, fontWeight: '600', color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
 
   goalCard: { marginHorizontal: 20, marginBottom: 12, backgroundColor: C.card, borderRadius: 18, borderWidth: 1, borderColor: C.border, padding: 18 },
   goalIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
@@ -574,7 +481,6 @@ const s = StyleSheet.create({
   sheet: { backgroundColor: C.card, borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 48 },
   handle: { width: 40, height: 4, backgroundColor: C.border, borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
   sheetTitle: { fontSize: 18, fontWeight: '700', color: C.textPrimary, marginBottom: 18 },
-  fieldLabel: { fontSize: 11, fontWeight: '600', color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
   input: { backgroundColor: C.bg, borderWidth: 1.5, borderColor: C.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, color: C.textPrimary, marginBottom: 16 },
   saveBtn: { backgroundColor: C.brand, borderRadius: 14, paddingVertical: 15, alignItems: 'center' },
   saveBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },

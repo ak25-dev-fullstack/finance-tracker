@@ -7,6 +7,7 @@ import {
   ScrollView,
   Alert,
   Share,
+  Switch,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +23,23 @@ export default function Profile() {
   const { user, logout } = useAuth();
   const [txCount, setTxCount] = useState(0);
   const [batchCount, setBatchCount] = useState(0);
+
+  const [adviserAccess, setAdviserAccess] = useState({
+    spending: true,
+    savings: true,
+    investments: true,
+    credit: true,
+  });
+
+  const [dataUsage, setDataUsage] = useState({
+    appAnalytics: true,
+    adviserEvaluation: true,
+    productResearch: false,
+  });
+
+  const toggleAdviserAccess = (key: keyof typeof adviserAccess, value: boolean) => {
+    setAdviserAccess((prev) => ({ ...prev, [key]: value }));
+  };
 
   useFocusEffect(useCallback(() => {
     Promise.all([loadTransactions(), loadImportBatches()]).then(([txs, batches]) => {
@@ -167,6 +185,79 @@ export default function Profile() {
           />
         </View>
 
+        {/* Adviser Data Access */}
+        <View style={s.section}>
+          <Text style={s.sectionTitle}>Adviser Data Access</Text>
+          <ToggleRow
+            icon="receipt-outline"
+            label="Spending & transactions"
+            description="Your categorised transaction history"
+            value={adviserAccess.spending}
+            onValueChange={(v) => toggleAdviserAccess('spending', v)}
+          />
+          <ToggleRow
+            icon="wallet-outline"
+            label="Savings & ISAs"
+            description="Savings pots, ISA balances and rates"
+            value={adviserAccess.savings}
+            onValueChange={(v) => toggleAdviserAccess('savings', v)}
+          />
+          <ToggleRow
+            icon="trending-up-outline"
+            label="Investments & portfolio"
+            description="Holdings, performance and asset allocation"
+            value={adviserAccess.investments}
+            onValueChange={(v) => toggleAdviserAccess('investments', v)}
+          />
+          <ToggleRow
+            icon="card-outline"
+            label="Credit & borrowing"
+            description="Credit cards, loans and outstanding balances"
+            value={adviserAccess.credit}
+            onValueChange={(v) => toggleAdviserAccess('credit', v)}
+            last
+          />
+          <View style={s.adviserNote}>
+            <Ionicons name="information-circle-outline" size={13} color={C.textMuted} style={{ marginRight: 6, marginTop: 1 }} />
+            <Text style={s.adviserNoteText}>
+              Your adviser can only view categories you have enabled. Access can be changed at any time. Changes take effect on your adviser's next session.
+            </Text>
+          </View>
+        </View>
+
+        {/* DWK Data Usage */}
+        <View style={s.section}>
+          <Text style={s.sectionTitle}>DWK Data Usage</Text>
+          <ToggleRow
+            icon="bar-chart-outline"
+            label="App effectiveness"
+            description="How you use the app — feature engagement and navigation patterns"
+            value={dataUsage.appAnalytics}
+            onValueChange={(v) => setDataUsage((prev) => ({ ...prev, appAnalytics: v }))}
+          />
+          <ToggleRow
+            icon="people-outline"
+            label="Adviser performance"
+            description="Whether advice leads to positive financial outcomes over time"
+            value={dataUsage.adviserEvaluation}
+            onValueChange={(v) => setDataUsage((prev) => ({ ...prev, adviserEvaluation: v }))}
+          />
+          <ToggleRow
+            icon="flask-outline"
+            label="Product research"
+            description="Anonymous feedback to improve future DWK products and features"
+            value={dataUsage.productResearch}
+            onValueChange={(v) => setDataUsage((prev) => ({ ...prev, productResearch: v }))}
+            last
+          />
+          <View style={s.adviserNote}>
+            <Ionicons name="information-circle-outline" size={13} color={C.textMuted} style={{ marginRight: 6, marginTop: 1 }} />
+            <Text style={s.adviserNoteText}>
+              Data is anonymised and aggregated before analysis. It is never sold to third parties. You can withdraw consent at any time under your GDPR rights.
+            </Text>
+          </View>
+        </View>
+
         {/* Legal */}
         <View style={s.section}>
           <Text style={s.sectionTitle}>Legal</Text>
@@ -212,6 +303,31 @@ function Row({
       </View>
       <Text style={s.rowLabel}>{label}</Text>
       <Text style={[s.rowValue, valueColor ? { color: valueColor } : undefined]}>{value}</Text>
+    </View>
+  );
+}
+
+function ToggleRow({
+  icon, label, description, value, onValueChange, last,
+}: {
+  icon: any; label: string; description: string; value: boolean; onValueChange: (v: boolean) => void; last?: boolean;
+}) {
+  return (
+    <View style={[s.row, !last && s.rowBorder, { paddingVertical: 13 }]}>
+      <View style={s.rowIcon}>
+        <Ionicons name={icon} size={17} color={C.brandLight} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={s.rowLabel}>{label}</Text>
+        <Text style={s.toggleDesc}>{description}</Text>
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onValueChange}
+        trackColor={{ false: C.border, true: C.brand }}
+        thumbColor="#fff"
+        ios_backgroundColor={C.border}
+      />
     </View>
   );
 }
@@ -284,6 +400,9 @@ const s = StyleSheet.create({
   },
   rowLabel: { flex: 1, fontSize: 14, color: C.textSecondary },
   rowValue: { fontSize: 14, fontWeight: '600', color: C.textPrimary, maxWidth: '45%', textAlign: 'right' },
+  toggleDesc: { fontSize: 11, color: C.textMuted, marginTop: 2 },
+  adviserNote: { flexDirection: 'row', alignItems: 'flex-start', paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: 1, borderTopColor: C.borderLight },
+  adviserNoteText: { flex: 1, fontSize: 11, color: C.textMuted, lineHeight: 16 },
 
   fcaBox: {
     flexDirection: 'row', alignItems: 'flex-start',

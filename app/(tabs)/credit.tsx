@@ -272,7 +272,7 @@ export default function CreditScreen() {
               <Text style={s.adviserCardSub}>Get expert advice on your debts, mortgage, and pension</Text>
             </View>
           </View>
-          <Pressable style={s.adviserBtn} onPress={() => router.push('/(tabs)/invest?tab=adviser' as any)}>
+          <Pressable style={s.adviserBtn} onPress={() => router.push('/(tabs)/adviser')}>
             <Text style={s.adviserBtnText}>Consult Adviser</Text>
             <Ionicons name="arrow-forward" size={16} color="#fff" />
           </Pressable>
