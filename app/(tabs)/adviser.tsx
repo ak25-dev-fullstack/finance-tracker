@@ -1,14 +1,15 @@
+import { C } from '@/constants/theme';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  StyleSheet,
-  TextInput,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { C } from '@/constants/theme';
+import Logo from '../components/Logo';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -64,6 +65,8 @@ export default function AdviserScreen() {
   const [consultationNote, setConsultationNote] = useState('');
   const [preferredTime, setPreferredTime] = useState('');
   const [consultationSent, setConsultationSent] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [portfolioOpen, setPortfolioOpen] = useState(false);
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
@@ -82,9 +85,12 @@ export default function AdviserScreen() {
   return (
     <View style={s.container}>
       <View style={s.header}>
-        <View>
-          <Text style={s.title}>Adviser</Text>
-          <Text style={s.sub}>Your DWK advisory team</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Logo width={120} height={28} />
+          <View style={{ marginLeft: 12 }}>
+            <Text style={s.title}>Adviser</Text>
+            <Text style={s.sub}>Your DWK advisory team</Text>
+          </View>
         </View>
       </View>
 
@@ -135,14 +141,23 @@ export default function AdviserScreen() {
           </View>
         ))}
 
-        {/* Portfolio access */}
-        <Text style={s.sectionTitle}>Portfolio access</Text>
-        <View style={s.card}>
-          <Text style={s.shareDesc}>Grant your adviser read-only access to your portfolio so they can provide fully informed, personalised recommendations without requiring you to share statements manually.</Text>
-          <Pressable style={s.saveBtn}>
-            <Text style={s.saveBtnText}>Share portfolio access</Text>
-          </Pressable>
-        </View>
+        {/* Portfolio access (accordion button) */}
+        <Pressable style={s.accordionHeader} onPress={() => setPortfolioOpen((o) => !o)}>
+          <View style={s.accordionIconWrap}>
+            <Ionicons name="briefcase-outline" size={18} color={C.brandLight} />
+          </View>
+          <Text style={s.accordionTitle}>Portfolio access</Text>
+          <Ionicons name={portfolioOpen ? 'chevron-up' : 'chevron-down'} size={18} color={C.textMuted} />
+        </Pressable>
+
+        {portfolioOpen && (
+          <View style={s.card}>
+            <Text style={s.shareDesc}>Grant your adviser read-only access to your portfolio so they can provide fully informed, personalised recommendations without requiring you to share statements manually.</Text>
+            <Pressable style={s.saveBtn}>
+              <Text style={s.saveBtnText}>Share portfolio access</Text>
+            </Pressable>
+          </View>
+        )}
 
         {/* Send a quick message */}
         <Pressable style={s.accordionHeader} onPress={() => setMessageOpen((o) => !o)}>
@@ -249,24 +264,35 @@ export default function AdviserScreen() {
           </View>
         )}
 
-        {/* History */}
-        <Text style={s.sectionTitle}>History</Text>
-        {HISTORY.map((entry) => {
-          const meta = HISTORY_TYPE_META[entry.type];
-          return (
-            <View key={entry.id} style={[s.historyEntry, { borderLeftColor: meta.color }]}>
-              <View style={s.historyHeader}>
-                <View style={[s.historyIconWrap, { backgroundColor: meta.color + '22' }]}>
-                  <Ionicons name={meta.icon as any} size={14} color={meta.color} />
+        {/* History (dropdown button) */}
+        <Pressable style={s.accordionHeader} onPress={() => setHistoryOpen((o) => !o)}>
+          <View style={s.accordionIconWrap}>
+            <Ionicons name="time-outline" size={18} color={C.brandLight} />
+          </View>
+          <Text style={s.accordionTitle}>History</Text>
+          <Ionicons name={historyOpen ? 'chevron-up' : 'chevron-down'} size={18} color={C.textMuted} />
+        </Pressable>
+
+        {historyOpen && (
+          <View style={{ marginTop: 8 }}>
+            {HISTORY.map((entry) => {
+              const meta = HISTORY_TYPE_META[entry.type];
+              return (
+                <View key={entry.id} style={[s.historyEntry, { borderLeftColor: meta.color }]}> 
+                  <View style={s.historyHeader}>
+                    <View style={[s.historyIconWrap, { backgroundColor: meta.color + '22' }]}>
+                      <Ionicons name={meta.icon as any} size={14} color={meta.color} />
+                    </View>
+                    <Text style={[s.historyType, { color: meta.color }]}>{meta.label}</Text>
+                    <Text style={s.historyDate}>{entry.date}</Text>
+                  </View>
+                  <Text style={s.historyAuthor}>{entry.author === 'You' ? 'You' : entry.author}</Text>
+                  <Text style={s.historyContent}>{entry.content}</Text>
                 </View>
-                <Text style={[s.historyType, { color: meta.color }]}>{meta.label}</Text>
-                <Text style={s.historyDate}>{entry.date}</Text>
-              </View>
-              <Text style={s.historyAuthor}>{entry.author === 'You' ? 'You' : entry.author}</Text>
-              <Text style={s.historyContent}>{entry.content}</Text>
-            </View>
-          );
-        })}
+              );
+            })}
+          </View>
+        )}
 
       </ScrollView>
     </View>
