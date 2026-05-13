@@ -12,33 +12,43 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
+import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 // ─── Period types & chart data ───────────────────────────────────────────────
 
 type Period = '1D' | '1W' | '1M' | '3M' | 'YTD' | '1Y' | 'MAX';
 const PERIODS: Period[] = ['1D', '1W', '1M', '3M', 'YTD', '1Y', 'MAX'];
 
-type PeriodMeta = { data: number[]; change: string; positive: boolean; label: string };
+type PeriodMeta = { data: number[]; change: string; positive: boolean; label: string; labels: string[] };
+
+const LABELS: Record<Period, string[]> = {
+  '1D':  ['09:30', '10:30', '11:30', '12:30', '13:30', '14:30', '15:30'],
+  '1W':  ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  '1M':  ['Apr 1', 'Apr 4', 'Apr 7', 'Apr 10', 'Apr 13', 'Apr 16', 'Apr 19', 'Apr 22', 'Apr 25', 'Apr 28', 'May 1', 'May 4'],
+  '3M':  ['Jan 1', 'Jan 15', 'Feb 1', 'Feb 15', 'Mar 1', 'Mar 15', 'Apr 1', 'Apr 15', 'May 1', 'May 15', 'Jun 1', 'Jun 15'],
+  'YTD': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+  '1Y':  ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  'MAX': ['2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023'],
+};
 
 const PORTFOLIO_PERIODS: Record<Period, PeriodMeta> = {
-  '1D':  { data: [21200, 21150, 21280, 21220, 21310, 21270, 21390], change: '+0.2%', positive: true,  label: 'today' },
-  '1W':  { data: [20900, 21100, 20950, 21200, 21350, 21280, 21390], change: '+2.3%', positive: true,  label: 'this week' },
-  '1M':  { data: [20500, 20600, 20400, 20750, 20900, 21100, 20800, 21200, 21000, 21300, 21150, 21390], change: '+4.3%', positive: true,  label: 'this month' },
-  '3M':  { data: [19500, 20100, 20400, 20200, 20800, 21100, 20900, 21200, 21000, 21350, 21100, 21390], change: '+9.7%', positive: true,  label: 'in 3 months' },
-  'YTD': { data: [19500, 20100, 21800, 22400, 20900, 21390], change: '+9.7%', positive: true,  label: 'YTD' },
-  '1Y':  { data: [14800, 16200, 15600, 17400, 18900, 19500, 18700, 20100, 21800, 22400, 20900, 21390], change: '+6.2%', positive: true,  label: 'this year' },
-  'MAX': { data: [8200, 9500, 10200, 11800, 10900, 12400, 13100, 14800, 16200, 15600, 17400, 18900, 19500, 18700, 20100, 21800, 22400, 20900, 21390], change: '+160.9%', positive: true, label: 'all time' },
+  '1D':  { data: [21200, 21150, 21280, 21220, 21310, 21270, 21390], change: '+0.2%', positive: true,  label: 'today', labels: LABELS['1D'] },
+  '1W':  { data: [20900, 21100, 20950, 21200, 21350, 21280, 21390], change: '+2.3%', positive: true,  label: 'this week', labels: LABELS['1W'] },
+  '1M':  { data: [20500, 20600, 20400, 20750, 20900, 21100, 20800, 21200, 21000, 21300, 21150, 21390], change: '+4.3%', positive: true,  label: 'this month', labels: LABELS['1M'] },
+  '3M':  { data: [19500, 20100, 20400, 20200, 20800, 21100, 20900, 21200, 21000, 21350, 21100, 21390], change: '+9.7%', positive: true,  label: 'in 3 months', labels: LABELS['3M'] },
+  'YTD': { data: [19500, 20100, 21800, 22400, 20900, 21390], change: '+9.7%', positive: true,  label: 'YTD', labels: LABELS['YTD'] },
+  '1Y':  { data: [14800, 16200, 15600, 17400, 18900, 19500, 18700, 20100, 21800, 22400, 20900, 21390], change: '+6.2%', positive: true,  label: 'this year', labels: LABELS['1Y'] },
+  'MAX': { data: [8200, 9500, 10200, 11800, 10900, 12400, 13100, 14800, 16200, 15600, 17400, 18900, 19500, 18700, 20100, 21800, 22400, 20900, 21390], change: '+160.9%', positive: true, label: 'all time', labels: LABELS['MAX'] },
 };
 
 const GOALS_PERIODS: Record<Period, PeriodMeta> = {
-  '1D':  { data: [71100, 71050, 71150, 71100, 71180, 71200], change: '+0.1%', positive: true,  label: 'today' },
-  '1W':  { data: [70200, 70400, 70600, 70800, 71000, 71100, 71200], change: '+1.4%', positive: true,  label: 'this week' },
-  '1M':  { data: [68000, 68500, 69000, 69200, 69800, 70200, 70600, 71200], change: '+4.7%', positive: true,  label: 'this month' },
-  '3M':  { data: [63000, 65000, 67000, 68000, 69200, 70200, 71200], change: '+13.0%', positive: true,  label: 'in 3 months' },
-  'YTD': { data: [55000, 60000, 64000, 67000, 69000, 71200], change: '+29.5%', positive: true,  label: 'YTD' },
-  '1Y':  { data: [40600, 45000, 50000, 55000, 60000, 64000, 67000, 69000, 71200], change: '+75.4%', positive: true,  label: 'this year' },
-  'MAX': { data: [20000, 28000, 35000, 40600, 45000, 50000, 55000, 60000, 64000, 67000, 69000, 71200], change: '+256%', positive: true,  label: 'all time' },
+  '1D':  { data: [71100, 71050, 71150, 71100, 71180, 71200], change: '+0.1%', positive: true,  label: 'today', labels: LABELS['1D'].slice(0, 6) },
+  '1W':  { data: [70200, 70400, 70600, 70800, 71000, 71100, 71200], change: '+1.4%', positive: true,  label: 'this week', labels: LABELS['1W'] },
+  '1M':  { data: [68000, 68500, 69000, 69200, 69800, 70200, 70600, 71200], change: '+4.7%', positive: true,  label: 'this month', labels: LABELS['1M'].slice(0, 8) },
+  '3M':  { data: [63000, 65000, 67000, 68000, 69200, 70200, 71200], change: '+13.0%', positive: true,  label: 'in 3 months', labels: LABELS['3M'].slice(0, 7) },
+  'YTD': { data: [55000, 60000, 64000, 67000, 69000, 71200], change: '+29.5%', positive: true,  label: 'YTD', labels: LABELS['YTD'] },
+  '1Y':  { data: [40600, 45000, 50000, 55000, 60000, 64000, 67000, 69000, 71200], change: '+75.4%', positive: true,  label: 'this year', labels: LABELS['1Y'].slice(0, 9) },
+  'MAX': { data: [20000, 28000, 35000, 40600, 45000, 50000, 55000, 60000, 64000, 67000, 69000, 71200], change: '+256%', positive: true, label: 'all time', labels: LABELS['MAX'].slice(0, 12) },
 };
 
 function fmtK(v: number): string {
@@ -46,8 +56,9 @@ function fmtK(v: number): string {
   return `£${v.toFixed(0)}`;
 }
 
-function MiniLineChart({ data }: { data: number[] }) {
+function MiniLineChart({ data, labels: labelsProp }: { data: number[]; labels?: string[] }) {
   const [chartWidth, setChartWidth] = useState(0);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const height = 88;
   const pad = 4;
   const labelWidth = 46;
@@ -56,6 +67,7 @@ function MiniLineChart({ data }: { data: number[] }) {
   const max = Math.max(...data);
   const mid = (min + max) / 2;
   const range = max - min || 1;
+  const labels = labelsProp ?? data.map((_, i) => `Point ${i + 1}`);
 
   const yPos = (v: number) => pad + (1 - (v - min) / range) * (height - pad * 2);
 
@@ -68,6 +80,51 @@ function MiniLineChart({ data }: { data: number[] }) {
   const area = `${line} L${pts[pts.length - 1].x},${height} L${pts[0].x},${height} Z`;
   const gridY = [yPos(max), yPos(mid), yPos(min)];
 
+  const activePoint = hoverIndex !== null && pts[hoverIndex] ? pts[hoverIndex] : null;
+  const activeLabel = activePoint ? labels[hoverIndex as number] : undefined;
+  const activeValue = activePoint ? data[hoverIndex as number] : undefined;
+  const prevValue = hoverIndex && hoverIndex > 0 ? data[hoverIndex - 1] : undefined;
+  const changeAmount = activeValue !== undefined && prevValue !== undefined ? activeValue - prevValue : undefined;
+  const changePct = changeAmount !== undefined && prevValue !== undefined ? (changeAmount / prevValue) * 100 : undefined;
+  const tooltipLeft = activePoint ? Math.min(Math.max(activePoint.x - 56, 0), chartWidth - 122) : 0;
+  const tooltipTop = activePoint ? Math.max(activePoint.y - 56, 6) : 0;
+
+  const hoverHandlers = {
+    onMouseMove: (e: any) => {
+      if (!chartWidth || pts.length === 0) return;
+      const xRaw = e.nativeEvent.locationX ?? e.nativeEvent.offsetX ?? 0;
+      const x = Math.min(Math.max(xRaw, 0), chartWidth);
+      let closestIndex = 0;
+
+      for (let i = 0; i < pts.length; i += 1) {
+        const point = pts[i];
+        const prev = pts[i - 1];
+        const next = pts[i + 1];
+
+        if (!prev) {
+          const mid = next ? (point.x + next.x) / 2 : point.x;
+          if (x <= mid) {
+            closestIndex = i;
+            break;
+          }
+        } else if (!next) {
+          closestIndex = i;
+          break;
+        } else {
+          const leftBoundary = (prev.x + point.x) / 2;
+          const rightBoundary = (point.x + next.x) / 2;
+          if (x > leftBoundary && x <= rightBoundary) {
+            closestIndex = i;
+            break;
+          }
+        }
+      }
+
+      setHoverIndex(closestIndex);
+    },
+    onMouseLeave: () => setHoverIndex(null),
+  } as any;
+
   return (
     <View style={{ marginTop: 16, flexDirection: 'row' }}>
       <View style={{ width: labelWidth, height, justifyContent: 'space-between', paddingVertical: pad }}>
@@ -77,7 +134,11 @@ function MiniLineChart({ data }: { data: number[] }) {
           </Text>
         ))}
       </View>
-      <View style={{ flex: 1 }} onLayout={e => setChartWidth(e.nativeEvent.layout.width)}>
+      <View
+        style={{ flex: 1, position: 'relative' }}
+        onLayout={e => setChartWidth(e.nativeEvent.layout.width)}
+        {...(hoverHandlers as any)}
+      >
         {chartWidth > 0 && (
           <Svg width={chartWidth} height={height}>
             <Defs>
@@ -91,7 +152,35 @@ function MiniLineChart({ data }: { data: number[] }) {
             ))}
             <Path d={area} fill="url(#chartGrad)" />
             <Path d={line} stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            <Rect
+              x={0}
+              y={0}
+              width={chartWidth}
+              height={height}
+              fill="transparent"
+              {...(hoverHandlers as any)}
+              onPressIn={(e: any) => hoverHandlers.onMouseMove(e)}
+              onPressOut={() => setHoverIndex(null)}
+            />
+            {activePoint && (
+              <>
+                <Path d={`M${activePoint.x},0 L${activePoint.x},${height}`} stroke="rgba(255,255,255,0.18)" strokeWidth="1" strokeDasharray="4,4" />
+                <Circle cx={activePoint.x} cy={activePoint.y} r={8} fill="rgba(255,255,255,0.15)" />
+                <Circle cx={activePoint.x} cy={activePoint.y} r={4} fill="#fff" />
+              </>
+            )}
           </Svg>
+        )}
+        {activePoint && activeLabel !== undefined && activeValue !== undefined && (
+          <View pointerEvents="none" style={[s.tooltipCard, { left: tooltipLeft, top: tooltipTop }]}> 
+            <Text style={s.tooltipDate}>{activeLabel}</Text>
+            <Text style={s.tooltipValue}>£{activeValue.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</Text>
+            {changeAmount !== undefined && changePct !== undefined && (
+              <Text style={[s.tooltipChange, changeAmount >= 0 ? s.tooltipChangePositive : s.tooltipChangeNegative]}>
+                {changeAmount >= 0 ? '+' : ''}{changePct.toFixed(1)}% · {changeAmount >= 0 ? '+' : '-'}£{Math.abs(changeAmount).toLocaleString('en-GB', { minimumFractionDigits: 2 })}
+              </Text>
+            )}
+          </View>
         )}
       </View>
     </View>
@@ -227,17 +316,8 @@ function PortfolioTab({ total }: { total: number }) {
           <Ionicons name={pd.positive ? 'trending-up' : 'trending-down'} size={12} color={pd.positive ? C.income : C.destructive} />
           <Text style={[s.heroBadgeText, { color: pd.positive ? C.income : C.destructive }]}> {pd.change} {pd.label}</Text>
         </View>
-        <MiniLineChart data={pd.data} />
+        <MiniLineChart data={pd.data} labels={pd.labels} />
       </View>
-
-      {/* Period selector */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
-        {PERIODS.map((p) => (
-          <Pressable key={p} style={[s.periodPill, period === p && s.periodPillActive]} onPress={() => setPeriod(p)}>
-            <Text style={[s.periodPillText, period === p && s.periodPillTextActive]}>{p}</Text>
-          </Pressable>
-        ))}
-      </ScrollView>
 
       {/* Breakdown */}
       <Text style={s.sectionTitle}>Breakdown by type</Text>
@@ -444,17 +524,8 @@ function GoalsTab() {
           <Ionicons name={pd.positive ? 'trending-up' : 'trending-down'} size={12} color={pd.positive ? C.income : C.destructive} />
           <Text style={[s.heroBadgeText, { color: pd.positive ? C.income : C.destructive }]}> {pd.change} {pd.label}</Text>
         </View>
-        <MiniLineChart data={pd.data} />
+        <MiniLineChart data={pd.data} labels={pd.labels} />
       </View>
-
-      {/* Period selector */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
-        {PERIODS.map((p) => (
-          <Pressable key={p} style={[s.periodPill, period === p && s.periodPillActive]} onPress={() => setPeriod(p)}>
-            <Text style={[s.periodPillText, period === p && s.periodPillTextActive]}>{p}</Text>
-          </Pressable>
-        ))}
-      </ScrollView>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 20, marginTop: 16, marginBottom: 12 }}>
         <Text style={[s.sectionTitle, { marginTop: 0, marginHorizontal: 0, marginBottom: 0 }]}>Financial goals</Text>
@@ -629,4 +700,25 @@ const s = StyleSheet.create({
   saveBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
   colorSwatch: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   colorSwatchActive: { borderWidth: 3, borderColor: '#fff' },
+  tooltipCard: {
+    position: 'absolute',
+    minWidth: 112,
+    backgroundColor: '#0f172a',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    elevation: 5,
+    zIndex: 10,
+  },
+  tooltipDate: { fontSize: 10, color: C.textMuted, marginBottom: 2, textTransform: 'uppercase', letterSpacing: 0.5 },
+  tooltipValue: { fontSize: 13, fontWeight: '700', color: '#fff' },
+  tooltipChange: { fontSize: 11, marginTop: 4, fontWeight: '600' },
+  tooltipChangePositive: { color: C.income },
+  tooltipChangeNegative: { color: C.destructive },
 });
