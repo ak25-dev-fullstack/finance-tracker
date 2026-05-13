@@ -202,7 +202,7 @@ function PortfolioTab({ total }: { total: number }) {
       </View>
 
       {/* Filter pills */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 22 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 16 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
         {filters.map((f) => (
           <Pressable key={f} style={[s.filterPill, filter === f && s.filterPillActive]} onPress={() => setFilter(f as any)}>
             <Text style={[s.filterPillText, filter === f && s.filterPillTextActive]}>{f}</Text>
@@ -359,7 +359,7 @@ function GoalsTab() {
         </Text>
       </View>
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 20, marginTop: 22, marginBottom: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 20, marginTop: 16, marginBottom: 12 }}>
         <Text style={[s.sectionTitle, { marginTop: 0, marginHorizontal: 0, marginBottom: 0 }]}>Financial goals</Text>
         <Pressable style={s.smallAddBtn} onPress={() => setShowModal(true)}>
           <Ionicons name="add" size={16} color="#fff" />
@@ -455,14 +455,14 @@ const s = StyleSheet.create({
   tabPillText: { fontSize: 14, fontWeight: '600', color: C.textMuted },
   tabPillTextActive: { color: '#fff' },
 
-  heroCard: { marginHorizontal: 20, marginTop: 18, backgroundColor: C.brand, borderRadius: 20, padding: 22 },
+  heroCard: { marginHorizontal: 20, marginTop: 16, backgroundColor: C.brand, borderRadius: 20, padding: 22 },
   heroLabel: { fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: '500', marginBottom: 4 },
   heroAmount: { fontSize: 34, fontWeight: '700', color: '#fff', marginBottom: 10 },
   heroBadge: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', backgroundColor: C.incomeBg, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   heroBadgeText: { fontSize: 12, fontWeight: '600', color: C.income },
   heroBadgeText2: { fontSize: 12, color: 'rgba(255,255,255,0.65)', marginTop: 6 },
 
-  sectionTitle: { fontSize: 15, fontWeight: '600', color: C.textPrimary, marginHorizontal: 20, marginTop: 22, marginBottom: 12 },
+  sectionTitle: { fontSize: 15, fontWeight: '600', color: C.textPrimary, marginHorizontal: 20, marginTop: 16, marginBottom: 12 },
 
   card: { marginHorizontal: 20, backgroundColor: C.card, borderRadius: 18, borderWidth: 1, borderColor: C.border, padding: 18 },
 
