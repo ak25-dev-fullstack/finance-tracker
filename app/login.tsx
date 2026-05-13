@@ -1,19 +1,20 @@
+import Logo from '@/app/components/Logo';
+import { C } from '@/constants/theme';
+import { useAuth } from '@/context/auth';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  StyleSheet,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useAuth } from '@/context/auth';
-import { C } from '@/constants/theme';
 
 export default function Login() {
   const router = useRouter();
@@ -49,10 +50,7 @@ export default function Login() {
     <KeyboardAvoidingView style={s.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={s.inner} keyboardShouldPersistTaps="handled" contentInsetAdjustmentBehavior="automatic">
           <View style={s.brandWrap}>
-            <View style={s.logoCircle}>
-              <Ionicons name="wallet" size={32} color="#fff" />
-            </View>
-            <Text style={s.brand}>DWK Finance</Text>
+            <Logo height={52} />
             <Text style={s.tagline}>Secure access to your financial dashboard</Text>
           </View>
 
@@ -147,10 +145,8 @@ const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
   inner: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 32 },
 
-  brandWrap: { alignItems: 'center', marginBottom: 32 },
-  logoCircle: { width: 72, height: 72, borderRadius: 36, backgroundColor: C.brand, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
-  brand: { fontSize: 26, fontWeight: '700', color: C.textPrimary },
-  tagline: { fontSize: 13, color: C.textMuted, marginTop: 4, textAlign: 'center' },
+  brandWrap: { alignItems: 'center', marginBottom: 32, gap: 12 },
+  tagline: { fontSize: 13, color: C.textMuted, textAlign: 'center' },
 
   card: { backgroundColor: C.card, borderRadius: 20, borderWidth: 1, borderColor: C.border, padding: 24 },
   cardTitle: { fontSize: 20, fontWeight: '700', color: C.textPrimary, marginBottom: 20 },

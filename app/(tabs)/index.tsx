@@ -1,4 +1,5 @@
 import { CONNECTED_BANKS_KEY, ConnectedBank } from '@/app/connect-bank';
+import Logo from '@/app/components/Logo';
 import { C, COLOR_PALETTE, getCategoryColor } from '@/constants/theme';
 import { useAuth } from '@/context/auth';
 import { CATEGORIES, runAgentCommand } from '@/services/categorizer';
@@ -216,8 +217,8 @@ export default function Index() {
         >
           {/* Header */}
           <View style={s.header}>
-            <View>
-              <Text style={s.greeting}>DWK Finance</Text>
+            <View style={{ gap: 4 }}>
+              <Logo height={26} />
               <Text style={s.subGreeting}>{user?.name ?? 'Personal Account'}</Text>
             </View>
             <View style={s.headerActions}>

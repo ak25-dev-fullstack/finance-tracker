@@ -1,3 +1,4 @@
+import Logo from '@/app/components/Logo';
 import { C } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
@@ -13,41 +14,86 @@ import {
 } from 'react-native';
 import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
-// ─── Portfolio history (last 12 months) ─────────────────────────────────────
+// ─── Period types & chart data ───────────────────────────────────────────────
 
-const PORTFOLIO_HISTORY = [14800, 16200, 15600, 17400, 18900, 19500, 18700, 20100, 21800, 22400, 20900, 21390];
+type Period = '1D' | '1W' | '1M' | '3M' | 'YTD' | '1Y' | 'MAX';
+const PERIODS: Period[] = ['1D', '1W', '1M', '3M', 'YTD', '1Y', 'MAX'];
 
-function MiniLineChart() {
-  const [width, setWidth] = useState(0);
-  const height = 56;
-  const pad = 2;
+type PeriodMeta = { data: number[]; change: string; positive: boolean; label: string };
 
-  const min = Math.min(...PORTFOLIO_HISTORY);
-  const max = Math.max(...PORTFOLIO_HISTORY);
+const PORTFOLIO_PERIODS: Record<Period, PeriodMeta> = {
+  '1D':  { data: [21200, 21150, 21280, 21220, 21310, 21270, 21390], change: '+0.2%', positive: true,  label: 'today' },
+  '1W':  { data: [20900, 21100, 20950, 21200, 21350, 21280, 21390], change: '+2.3%', positive: true,  label: 'this week' },
+  '1M':  { data: [20500, 20600, 20400, 20750, 20900, 21100, 20800, 21200, 21000, 21300, 21150, 21390], change: '+4.3%', positive: true,  label: 'this month' },
+  '3M':  { data: [19500, 20100, 20400, 20200, 20800, 21100, 20900, 21200, 21000, 21350, 21100, 21390], change: '+9.7%', positive: true,  label: 'in 3 months' },
+  'YTD': { data: [19500, 20100, 21800, 22400, 20900, 21390], change: '+9.7%', positive: true,  label: 'YTD' },
+  '1Y':  { data: [14800, 16200, 15600, 17400, 18900, 19500, 18700, 20100, 21800, 22400, 20900, 21390], change: '+6.2%', positive: true,  label: 'this year' },
+  'MAX': { data: [8200, 9500, 10200, 11800, 10900, 12400, 13100, 14800, 16200, 15600, 17400, 18900, 19500, 18700, 20100, 21800, 22400, 20900, 21390], change: '+160.9%', positive: true, label: 'all time' },
+};
+
+const GOALS_PERIODS: Record<Period, PeriodMeta> = {
+  '1D':  { data: [71100, 71050, 71150, 71100, 71180, 71200], change: '+0.1%', positive: true,  label: 'today' },
+  '1W':  { data: [70200, 70400, 70600, 70800, 71000, 71100, 71200], change: '+1.4%', positive: true,  label: 'this week' },
+  '1M':  { data: [68000, 68500, 69000, 69200, 69800, 70200, 70600, 71200], change: '+4.7%', positive: true,  label: 'this month' },
+  '3M':  { data: [63000, 65000, 67000, 68000, 69200, 70200, 71200], change: '+13.0%', positive: true,  label: 'in 3 months' },
+  'YTD': { data: [55000, 60000, 64000, 67000, 69000, 71200], change: '+29.5%', positive: true,  label: 'YTD' },
+  '1Y':  { data: [40600, 45000, 50000, 55000, 60000, 64000, 67000, 69000, 71200], change: '+75.4%', positive: true,  label: 'this year' },
+  'MAX': { data: [20000, 28000, 35000, 40600, 45000, 50000, 55000, 60000, 64000, 67000, 69000, 71200], change: '+256%', positive: true,  label: 'all time' },
+};
+
+function fmtK(v: number): string {
+  if (v >= 1000) return `£${(v / 1000).toFixed(1)}k`;
+  return `£${v.toFixed(0)}`;
+}
+
+function MiniLineChart({ data }: { data: number[] }) {
+  const [chartWidth, setChartWidth] = useState(0);
+  const height = 88;
+  const pad = 4;
+  const labelWidth = 46;
+
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const mid = (min + max) / 2;
   const range = max - min || 1;
 
-  const pts = PORTFOLIO_HISTORY.map((v, i) => ({
-    x: pad + (i / (PORTFOLIO_HISTORY.length - 1)) * (width - pad * 2),
-    y: pad + (1 - (v - min) / range) * (height - pad * 2),
+  const yPos = (v: number) => pad + (1 - (v - min) / range) * (height - pad * 2);
+
+  const pts = data.map((v, i) => ({
+    x: pad + (i / (data.length - 1)) * (chartWidth - pad * 2),
+    y: yPos(v),
   }));
 
   const line = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
   const area = `${line} L${pts[pts.length - 1].x},${height} L${pts[0].x},${height} Z`;
+  const gridY = [yPos(max), yPos(mid), yPos(min)];
 
   return (
-    <View style={{ marginTop: 16 }} onLayout={e => setWidth(e.nativeEvent.layout.width)}>
-      {width > 0 && (
-        <Svg width={width} height={height}>
-          <Defs>
-            <LinearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor="#fff" stopOpacity="0.18" />
-              <Stop offset="1" stopColor="#fff" stopOpacity="0" />
-            </LinearGradient>
-          </Defs>
-          <Path d={area} fill="url(#chartGrad)" />
-          <Path d={line} stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-        </Svg>
-      )}
+    <View style={{ marginTop: 16, flexDirection: 'row' }}>
+      <View style={{ width: labelWidth, height, justifyContent: 'space-between', paddingVertical: pad }}>
+        {[max, mid, min].map((v, i) => (
+          <Text key={i} style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', textAlign: 'right', paddingRight: 6 }}>
+            {fmtK(v)}
+          </Text>
+        ))}
+      </View>
+      <View style={{ flex: 1 }} onLayout={e => setChartWidth(e.nativeEvent.layout.width)}>
+        {chartWidth > 0 && (
+          <Svg width={chartWidth} height={height}>
+            <Defs>
+              <LinearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0" stopColor="#fff" stopOpacity="0.18" />
+                <Stop offset="1" stopColor="#fff" stopOpacity="0" />
+              </LinearGradient>
+            </Defs>
+            {gridY.map((y, i) => (
+              <Path key={i} d={`M0,${y} L${chartWidth},${y}`} stroke="rgba(255,255,255,0.1)" strokeWidth="1" strokeDasharray="4,4" fill="none" />
+            ))}
+            <Path d={area} fill="url(#chartGrad)" />
+            <Path d={line} stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </Svg>
+        )}
+      </View>
     </View>
   );
 }
@@ -125,7 +171,8 @@ export default function InvestScreen() {
       {/* Header */}
       <View style={s.header}>
         <View>
-          <Text style={s.title}>Invest</Text>
+          <Logo height={28} />
+          <Text style={[s.title, { marginTop: 6 }]}>Invest</Text>
           <Text style={s.sub}>£{total.toLocaleString('en-GB', { minimumFractionDigits: 2 })} portfolio</Text>
         </View>
         <Pressable style={s.iconBtn}>
@@ -157,6 +204,8 @@ export default function InvestScreen() {
 
 function PortfolioTab({ total }: { total: number }) {
   const [filter, setFilter] = useState<'All' | Holding['type']>('All');
+  const [period, setPeriod] = useState<Period>('1Y');
+  const pd = PORTFOLIO_PERIODS[period];
 
   const byType = Object.entries(
     HOLDINGS.reduce<Record<string, number>>((acc, h) => {
@@ -175,11 +224,20 @@ function PortfolioTab({ total }: { total: number }) {
         <Text style={s.heroLabel}>Total Portfolio Value</Text>
         <Text style={s.heroAmount}>£{total.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</Text>
         <View style={s.heroBadge}>
-          <Ionicons name="trending-up" size={12} color={C.income} />
-          <Text style={s.heroBadgeText}> +6.2% this year</Text>
+          <Ionicons name={pd.positive ? 'trending-up' : 'trending-down'} size={12} color={pd.positive ? C.income : C.destructive} />
+          <Text style={[s.heroBadgeText, { color: pd.positive ? C.income : C.destructive }]}> {pd.change} {pd.label}</Text>
         </View>
-        <MiniLineChart />
+        <MiniLineChart data={pd.data} />
       </View>
+
+      {/* Period selector */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
+        {PERIODS.map((p) => (
+          <Pressable key={p} style={[s.periodPill, period === p && s.periodPillActive]} onPress={() => setPeriod(p)}>
+            <Text style={[s.periodPillText, period === p && s.periodPillTextActive]}>{p}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
 
       {/* Breakdown */}
       <Text style={s.sectionTitle}>Breakdown by type</Text>
@@ -373,6 +431,8 @@ function GoalsTab() {
 
   const totalTargets = GOALS.reduce((s, g) => s + g.target, 0);
   const totalProgress = GOALS.reduce((s, g) => s + g.current, 0);
+  const [period, setPeriod] = useState<Period>('1Y');
+  const pd = GOALS_PERIODS[period];
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
@@ -381,11 +441,20 @@ function GoalsTab() {
         <Text style={s.heroLabel}>Total progress across goals</Text>
         <Text style={s.heroAmount}>£{totalProgress.toLocaleString('en-GB')}</Text>
         <View style={s.heroBadge}>
-          <Ionicons name="flag" size={12} color={C.income} />
-          <Text style={s.heroBadgeText}> {((totalProgress / totalTargets) * 100).toFixed(0)}% of £{totalTargets.toLocaleString('en-GB')} target</Text>
+          <Ionicons name={pd.positive ? 'trending-up' : 'trending-down'} size={12} color={pd.positive ? C.income : C.destructive} />
+          <Text style={[s.heroBadgeText, { color: pd.positive ? C.income : C.destructive }]}> {pd.change} {pd.label}</Text>
         </View>
-        <MiniLineChart />
+        <MiniLineChart data={pd.data} />
       </View>
+
+      {/* Period selector */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 12 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
+        {PERIODS.map((p) => (
+          <Pressable key={p} style={[s.periodPill, period === p && s.periodPillActive]} onPress={() => setPeriod(p)}>
+            <Text style={[s.periodPillText, period === p && s.periodPillTextActive]}>{p}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 20, marginTop: 16, marginBottom: 12 }}>
         <Text style={[s.sectionTitle, { marginTop: 0, marginHorizontal: 0, marginBottom: 0 }]}>Financial goals</Text>
@@ -501,6 +570,11 @@ const s = StyleSheet.create({
   barFill: { height: '100%', borderRadius: 3 },
   breakdownPct: { fontSize: 12, color: C.textMuted, width: 38, textAlign: 'right' },
   breakdownVal: { fontSize: 12, fontWeight: '600', color: C.textPrimary, width: 60, textAlign: 'right' },
+
+  periodPill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, borderWidth: 1.5, borderColor: C.border, backgroundColor: C.card },
+  periodPillActive: { backgroundColor: C.brand, borderColor: C.brand },
+  periodPillText: { fontSize: 12, fontWeight: '600', color: C.textMuted },
+  periodPillTextActive: { color: '#fff' },
 
   filterPill: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5, borderColor: C.border, backgroundColor: C.card },
   filterPillActive: { backgroundColor: C.brand, borderColor: C.brand },

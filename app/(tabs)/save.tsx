@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  StyleSheet,
-  Modal,
-  TextInput,
-  Switch,
-} from 'react-native';
+import Logo from '@/app/components/Logo';
+import { C } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { C } from '@/constants/theme';
+import React, { useState } from 'react';
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
 type Goal = {
   id: string;
@@ -80,7 +81,8 @@ export default function SaveScreen() {
         {/* Header */}
         <View style={s.header}>
           <View>
-            <Text style={s.title}>Save</Text>
+            <Logo height={28} />
+            <Text style={[s.title, { marginTop: 6 }]}>Save</Text>
             <Text style={s.sub}>Track your savings goals</Text>
           </View>
           <Pressable style={s.addBtn} onPress={() => setShowModal(true)}>

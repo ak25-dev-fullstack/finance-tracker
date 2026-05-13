@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  StyleSheet,
-} from 'react-native';
+import Logo from '@/app/components/Logo';
+import { C } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { C } from '@/constants/theme';
+import React, { useState } from 'react';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 type Section = 'overview' | 'loans' | 'pension' | 'mortgage';
 
@@ -68,7 +69,8 @@ export default function CreditScreen() {
         {/* Header */}
         <View style={s.header}>
           <View>
-            <Text style={s.title}>Credit</Text>
+            <Logo height={28} />
+            <Text style={[s.title, { marginTop: 6 }]}>Credit</Text>
             <Text style={s.sub}>Loans, debts & pensions</Text>
           </View>
         </View>

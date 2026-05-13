@@ -85,12 +85,10 @@ export default function AdviserScreen() {
   return (
     <View style={s.container}>
       <View style={s.header}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Logo width={120} height={28} />
-          <View style={{ marginLeft: 12 }}>
-            <Text style={s.title}>Adviser</Text>
-            <Text style={s.sub}>Your DWK advisory team</Text>
-          </View>
+        <View>
+          <Logo height={28} />
+          <Text style={[s.title, { marginTop: 6 }]}>Adviser</Text>
+          <Text style={s.sub}>Your DWK advisory team</Text>
         </View>
       </View>
 
