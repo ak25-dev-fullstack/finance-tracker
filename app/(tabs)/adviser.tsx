@@ -272,7 +272,7 @@ export default function AdviserScreen() {
         </Pressable>
 
         {historyOpen && (
-          <View style={{ marginTop: 8 }}>
+          <View style={{ marginTop: 16 }}>
             {HISTORY.map((entry) => {
               const meta = HISTORY_TYPE_META[entry.type];
               return (
@@ -307,7 +307,7 @@ const s = StyleSheet.create({
 
   sectionTitle: { fontSize: 15, fontWeight: '600', color: C.textPrimary, marginHorizontal: 20, marginTop: 22, marginBottom: 12 },
 
-  accordionHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: 20, marginTop: 18, marginBottom: 4, backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, paddingHorizontal: 16, paddingVertical: 14 },
+  accordionHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: 20, marginTop: 16, marginBottom: 4, backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, paddingHorizontal: 16, paddingVertical: 14 },
   accordionIconWrap: { width: 34, height: 34, borderRadius: 10, backgroundColor: C.brandBg, borderWidth: 1, borderColor: C.brandBorder, alignItems: 'center', justifyContent: 'center' },
   accordionTitle: { flex: 1, fontSize: 15, fontWeight: '600', color: C.textPrimary },
   card: { marginHorizontal: 20, backgroundColor: C.card, borderRadius: 18, borderWidth: 1, borderColor: C.border, padding: 18 },
