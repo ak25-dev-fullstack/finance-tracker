@@ -171,7 +171,7 @@ function PortfolioTab({ total }: { total: number }) {
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
       {/* Total card */}
-      <View style={s.heroCard}>
+      <View style={[s.heroCard, { backgroundColor: '#0A1A2F' }]}>
         <Text style={s.heroLabel}>Total Portfolio Value</Text>
         <Text style={s.heroAmount}>£{total.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</Text>
         <View style={s.heroBadge}>

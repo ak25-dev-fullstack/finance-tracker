@@ -1,36 +1,35 @@
-import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  StyleSheet,
-  RefreshControl,
-  Modal,
-  TextInput,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CONNECTED_BANKS_KEY, ConnectedBank } from '@/app/connect-bank';
+import { C, COLOR_PALETTE, getCategoryColor } from '@/constants/theme';
+import { useAuth } from '@/context/auth';
+import { CATEGORIES, runAgentCommand } from '@/services/categorizer';
 import {
-  loadTransactions,
-  updateTransactionCategory,
-  updateTransactionName,
-  deleteTransaction,
   bulkUpdateCategory,
-  clearAllData,
+  deleteTransaction,
   loadCustomCategoryColors,
+  loadTransactions,
   saveCustomCategoryColor,
   Transaction,
+  updateTransactionCategory,
+  updateTransactionName
 } from '@/services/storage';
-import { CATEGORIES, runAgentCommand } from '@/services/categorizer';
-import { C, getCategoryColor, COLOR_PALETTE } from '@/constants/theme';
-import { useAuth } from '@/context/auth';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
 export default function Index() {
   const router = useRouter();
@@ -566,7 +565,7 @@ const s = StyleSheet.create({
   avatarBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: C.brandBg, borderWidth: 1, borderColor: C.brandBorder, alignItems: 'center', justifyContent: 'center' },
   logoutBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: C.expenseBg, borderWidth: 1, borderColor: C.expenseBorder, alignItems: 'center', justifyContent: 'center' },
 
-  balanceCard: { marginHorizontal: 20, marginTop: 16, backgroundColor: C.brand, borderRadius: 20, padding: 24 },
+  balanceCard: { marginHorizontal: 20, marginTop: 16, backgroundColor: '#1E86C3', borderRadius: 20, borderWidth: 1, borderColor: '#13263E', padding: 24 },
   balanceLabel: { fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: '500', marginBottom: 6 },
   balanceAmount: { fontSize: 36, fontWeight: '700', color: '#fff', marginBottom: 12 },
   balanceBadge: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },

@@ -1,6 +1,6 @@
 export const Colors = {
-  light: { text: '#F8FAFC', background: '#0F172A', tint: '#00b4d8', icon: '#94A3B8', tabIconDefault: '#64748B', tabIconSelected: '#00b4d8' },
-  dark: { text: '#F8FAFC', background: '#0F172A', tint: '#00b4d8', icon: '#94A3B8', tabIconDefault: '#64748B', tabIconSelected: '#00b4d8' },
+  light: { text: '#F8FAFC', background: '#0F172A', tint: '#1E86C3', icon: '#94A3B8', tabIconDefault: '#64748B', tabIconSelected: '#1E86C3' },
+  dark: { text: '#F8FAFC', background: '#0F172A', tint: '#1E86C3', icon: '#94A3B8', tabIconDefault: '#64748B', tabIconSelected: '#1E86C3' },
 };
 
 export const C = {
@@ -12,10 +12,10 @@ export const C = {
   textPrimary: '#F8FAFC',
   textSecondary: '#94A3B8',
   textMuted: '#64748B',
-  brand: '#00b4d8',
-  brandLight: '#48cae4',
-  brandBg: 'rgba(0,180,216,0.15)',
-  brandBorder: 'rgba(0,180,216,0.3)',
+  brand: '#1E86C3',
+  brandLight: '#1E86C3',
+  brandBg: 'rgba(30,134,195,0.15)',
+  brandBorder: 'rgba(30,134,195,0.3)',
   income: '#22C55E',
   incomeBg: 'rgba(34,197,94,0.12)',
   incomeBorder: 'rgba(34,197,94,0.3)',
@@ -24,9 +24,9 @@ export const C = {
   expenseBg: 'rgba(248,250,252,0.08)',
   expenseBorder: 'rgba(248,250,252,0.2)',
   expenseText: '#F8FAFC',
-  balance: '#00b4d8',
-  balanceBg: 'rgba(0,180,216,0.12)',
-  balanceBorder: 'rgba(0,180,216,0.3)',
+  balance: '#1E86C3',
+  balanceBg: 'rgba(30,134,195,0.12)',
+  balanceBorder: 'rgba(30,134,195,0.3)',
   warning: '#F59E0B',
   warningBg: 'rgba(245,158,11,0.12)',
   warningBorder: 'rgba(245,158,11,0.3)',
