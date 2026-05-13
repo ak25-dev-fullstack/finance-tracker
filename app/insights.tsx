@@ -26,6 +26,21 @@ function isValidMonth(v: string) {
   return /^\d{4}-\d{2}$/.test(v);
 }
 
+function getWeekStart(dateStr: string): string {
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.getDay();
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  return d.toISOString().slice(0, 10);
+}
+
+function fmtWeek(monday: string) {
+  return 'w/c ' + new Date(monday + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+function fmtDay(date: string) {
+  return new Date(date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
 function polarToCartesian(cx: number, cy: number, r: number, deg: number) {
   const rad = ((deg - 90) * Math.PI) / 180;
   return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
@@ -94,14 +109,16 @@ const bs = StyleSheet.create({
   val: { fontSize: 9, color: C.textSecondary, marginBottom: 4, fontWeight: '500' },
 });
 
-type Mode = 'category' | 'month';
-type FilterMode = 'all' | 'month' | 'custom';
+type Mode = 'category' | 'week' | 'day' | 'month';
+type FilterMode = 'all' | 'week' | 'day' | 'month' | 'custom';
 
 export default function Insights() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [mode, setMode] = useState<Mode>('category');
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
   const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedWeek, setSelectedWeek] = useState('');
+  const [selectedDay, setSelectedDay] = useState('');
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
@@ -129,13 +146,27 @@ export default function Insights() {
     [expenses]
   );
 
+  const availableWeeks = useMemo(() =>
+    [...new Set(expenses.map((t) => getWeekStart(t.date)))].sort().reverse(),
+    [expenses]
+  );
+
+  const availableDays = useMemo(() =>
+    [...new Set(expenses.map((t) => t.date))].sort().reverse(),
+    [expenses]
+  );
+
   const filteredExpenses = useMemo(() => {
     if (filterMode === 'month' && selectedMonth)
       return expenses.filter((t) => t.date.slice(0, 7) === selectedMonth);
+    if (filterMode === 'week' && selectedWeek)
+      return expenses.filter((t) => getWeekStart(t.date) === selectedWeek);
+    if (filterMode === 'day' && selectedDay)
+      return expenses.filter((t) => t.date === selectedDay);
     if (filterMode === 'custom' && isValidMonth(customFrom) && isValidMonth(customTo) && customFrom <= customTo)
       return expenses.filter((t) => { const m = t.date.slice(0, 7); return m >= customFrom && m <= customTo; });
     return expenses;
-  }, [expenses, filterMode, selectedMonth, customFrom, customTo]);
+  }, [expenses, filterMode, selectedMonth, selectedWeek, selectedDay, customFrom, customTo]);
 
   const byCategory = useMemo(() => {
     const map: Record<string, number> = {};
@@ -156,14 +187,39 @@ export default function Insights() {
     return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0])).slice(-6).map(([key, value]) => ({ label: fmtMonth(key), value }));
   }, [expenses]);
 
+  const weeklyData = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const t of expenses) { const k = getWeekStart(t.date); map[k] = (map[k] ?? 0) + t.amount; }
+    return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0])).slice(-10).map(([key, value]) => ({
+      label: new Date(key + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+      value,
+    }));
+  }, [expenses]);
+
+  const dailyData = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const t of expenses) { map[t.date] = (map[t.date] ?? 0) + t.amount; }
+    return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0])).slice(-14).map(([key, value]) => ({
+      label: new Date(key + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }),
+      value,
+    }));
+  }, [expenses]);
+
   const filterLabel = useMemo(() => {
     if (filterMode === 'month' && selectedMonth) return fmtMonth(selectedMonth);
+    if (filterMode === 'week' && selectedWeek) return fmtWeek(selectedWeek);
+    if (filterMode === 'day' && selectedDay) return fmtDay(selectedDay);
     if (filterMode === 'custom' && isValidMonth(customFrom) && isValidMonth(customTo))
       return `${fmtMonth(customFrom)} – ${fmtMonth(customTo)}`;
     return 'All time';
-  }, [filterMode, selectedMonth, customFrom, customTo]);
+  }, [filterMode, selectedMonth, selectedWeek, selectedDay, customFrom, customTo]);
 
-  const selectFilter = (f: FilterMode, month = '') => { setFilterMode(f); setSelectedMonth(month); };
+  const selectFilter = (f: FilterMode, value = '') => {
+    setFilterMode(f);
+    if (f === 'month') setSelectedMonth(value);
+    else if (f === 'week') setSelectedWeek(value);
+    else if (f === 'day') setSelectedDay(value);
+  };
 
   const handleRename = async () => {
     if (!renamingCategory || !renameInput.trim() || renameInput.trim() === renamingCategory) {
@@ -196,11 +252,14 @@ export default function Insights() {
   return (
     <ScrollView style={[s.container, s.scroll]} contentContainerStyle={{ paddingBottom: 40 }} contentInsetAdjustmentBehavior="automatic">
         <View style={s.toggle}>
-          {(['category', 'month'] as Mode[]).map((m) => (
+          {([
+            ['category', 'Category'],
+            ['week', 'Week'],
+            ['day', 'Day'],
+            ['month', 'Month'],
+          ] as [Mode, string][]).map(([m, label]) => (
             <Pressable key={m} style={[s.toggleBtn, mode === m && s.toggleActive]} onPress={() => setMode(m)}>
-              <Text style={[s.toggleText, mode === m && s.toggleTextActive]}>
-                {m === 'category' ? 'By Category' : 'By Month'}
-              </Text>
+              <Text style={[s.toggleText, mode === m && s.toggleTextActive]}>{label}</Text>
             </Pressable>
           ))}
         </View>
@@ -220,6 +279,18 @@ export default function Insights() {
                     <Pressable style={[s.chip, filterMode === 'all' && s.chipActive]} onPress={() => selectFilter('all')}>
                       <Text style={[s.chipText, filterMode === 'all' && s.chipTextActive]}>All time</Text>
                     </Pressable>
+                    <Pressable
+                      style={[s.chip, filterMode === 'week' && s.chipActive]}
+                      onPress={() => { setFilterMode('week'); if (!selectedWeek && availableWeeks.length) setSelectedWeek(availableWeeks[0]); }}
+                    >
+                      <Text style={[s.chipText, filterMode === 'week' && s.chipTextActive]}>Week</Text>
+                    </Pressable>
+                    <Pressable
+                      style={[s.chip, filterMode === 'day' && s.chipActive]}
+                      onPress={() => { setFilterMode('day'); if (!selectedDay && availableDays.length) setSelectedDay(availableDays[0]); }}
+                    >
+                      <Text style={[s.chipText, filterMode === 'day' && s.chipTextActive]}>Day</Text>
+                    </Pressable>
                     {availableMonths.map((m) => (
                       <Pressable key={m} style={[s.chip, filterMode === 'month' && selectedMonth === m && s.chipActive]} onPress={() => selectFilter('month', m)}>
                         <Text style={[s.chipText, filterMode === 'month' && selectedMonth === m && s.chipTextActive]}>{fmtMonth(m)}</Text>
@@ -229,6 +300,26 @@ export default function Insights() {
                       <Text style={[s.chipText, filterMode === 'custom' && s.chipTextActive]}>Custom…</Text>
                     </Pressable>
                   </ScrollView>
+
+                  {filterMode === 'week' && (
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.subFilterScroll} contentContainerStyle={{ paddingRight: 8 }}>
+                      {availableWeeks.map((w) => (
+                        <Pressable key={w} style={[s.subChip, selectedWeek === w && s.chipActive]} onPress={() => setSelectedWeek(w)}>
+                          <Text style={[s.chipText, selectedWeek === w && s.chipTextActive]}>{fmtWeek(w)}</Text>
+                        </Pressable>
+                      ))}
+                    </ScrollView>
+                  )}
+
+                  {filterMode === 'day' && (
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.subFilterScroll} contentContainerStyle={{ paddingRight: 8 }}>
+                      {availableDays.map((d) => (
+                        <Pressable key={d} style={[s.subChip, selectedDay === d && s.chipActive]} onPress={() => setSelectedDay(d)}>
+                          <Text style={[s.chipText, selectedDay === d && s.chipTextActive]}>{fmtDay(d)}</Text>
+                        </Pressable>
+                      ))}
+                    </ScrollView>
+                  )}
 
                   {filterMode === 'custom' && (
                     <View style={s.customRow}>
@@ -301,12 +392,38 @@ export default function Insights() {
                     <Text style={[s.chartTotal, { textAlign: 'center', paddingBottom: 16 }]}>No expenses for this period</Text>
                   )}
                 </>
+              ) : mode === 'week' ? (
+                <>
+                  <View style={{ paddingVertical: 16 }}>
+                    <BarChart data={weeklyData} />
+                  </View>
+                  {weeklyData.slice().reverse().map((d) => (
+                    <View key={d.label} style={s.legendRow}>
+                      <View style={[s.dot, { backgroundColor: C.brand }]} />
+                      <Text style={s.legendLabel}>{d.label}</Text>
+                      <Text style={s.legendAmt}>£{d.value.toFixed(2)}</Text>
+                    </View>
+                  ))}
+                </>
+              ) : mode === 'day' ? (
+                <>
+                  <View style={{ paddingVertical: 16 }}>
+                    <BarChart data={dailyData} />
+                  </View>
+                  {dailyData.slice().reverse().map((d) => (
+                    <View key={d.label} style={s.legendRow}>
+                      <View style={[s.dot, { backgroundColor: C.brand }]} />
+                      <Text style={s.legendLabel}>{d.label}</Text>
+                      <Text style={s.legendAmt}>£{d.value.toFixed(2)}</Text>
+                    </View>
+                  ))}
+                </>
               ) : (
                 <>
                   <View style={{ paddingVertical: 16 }}>
                     <BarChart data={monthlyData} />
                   </View>
-                  {monthlyData.map((d) => (
+                  {monthlyData.slice().reverse().map((d) => (
                     <View key={d.label} style={s.legendRow}>
                       <View style={[s.dot, { backgroundColor: C.brand }]} />
                       <Text style={s.legendLabel}>{d.label}</Text>
@@ -358,7 +475,9 @@ const s = StyleSheet.create({
   cardTitle: { fontSize: 16, fontWeight: '600', color: C.textPrimary },
 
   filterScroll: { marginHorizontal: -4, marginBottom: 4 },
+  subFilterScroll: { marginHorizontal: -4, marginTop: 8, marginBottom: 4 },
   chip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, borderWidth: 1.5, borderColor: C.border, backgroundColor: C.bg, marginHorizontal: 4 },
+  subChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, borderWidth: 1.5, borderColor: C.border, backgroundColor: C.cardHigh, marginHorizontal: 4 },
   chipActive: { backgroundColor: C.brand, borderColor: C.brand },
   chipText: { fontSize: 13, fontWeight: '500', color: C.textSecondary },
   chipTextActive: { color: '#fff', fontWeight: '600' },

@@ -52,6 +52,10 @@ export default function Index() {
   const [connectedBanks, setConnectedBanks] = useState<ConnectedBank[]>([]);
   const [customColors, setCustomColors] = useState<Record<string, string>>({});
 
+  const [openAccounts, setOpenAccounts] = useState(true);
+  const [openTransactions, setOpenTransactions] = useState(true);
+  const [openAdviser, setOpenAdviser] = useState(true);
+
   const catColor = (cat: string) => getCategoryColor(cat, customColors);
 
   const load = useCallback(async () => {
@@ -218,6 +222,9 @@ export default function Index() {
               <Text style={s.subGreeting}>{user?.name ?? 'Personal Account'}</Text>
             </View>
             <View style={s.headerActions}>
+              <Pressable style={s.avatarBtn} onPress={() => router.push('/search')}>
+                <Ionicons name="search-outline" size={18} color={C.brandLight} />
+              </Pressable>
               <Pressable
                 style={s.avatarBtn}
                 onPress={() => router.push('/profile')}
@@ -289,13 +296,16 @@ export default function Index() {
 
           {/* Connected Banks */}
           <View style={s.section}>
-            <View style={s.sectionHeader}>
+            <Pressable style={s.sectionHeader} onPress={() => setOpenAccounts((v) => !v)}>
               <Text style={s.sectionTitle}>Connected Accounts</Text>
-              <Pressable onPress={() => router.push('/connect-bank')}>
-                <Text style={s.viewAll}>{connectedBanks.length > 0 ? 'Manage' : 'Connect'}</Text>
-              </Pressable>
-            </View>
-            {connectedBanks.length === 0 ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Pressable onPress={() => router.push('/connect-bank')}>
+                  <Text style={s.viewAll}>{connectedBanks.length > 0 ? 'Manage' : 'Connect'}</Text>
+                </Pressable>
+                <Ionicons name={openAccounts ? 'chevron-up' : 'chevron-down'} size={16} color={C.textMuted} />
+              </View>
+            </Pressable>
+            {openAccounts && (connectedBanks.length === 0 ? (
               <Pressable style={s.connectBankBtn} onPress={() => router.push('/connect-bank')}>
                 <View style={s.connectBankIcon}>
                   <Ionicons name="link-outline" size={20} color={C.brandLight} />
@@ -321,21 +331,24 @@ export default function Index() {
                   </Text>
                 </View>
               ))
-            )}
+            ))}
           </View>
 
           {/* Recent Transactions */}
           <View style={s.section}>
-            <View style={s.sectionHeader}>
+            <Pressable style={s.sectionHeader} onPress={() => setOpenTransactions((v) => !v)}>
               <Text style={s.sectionTitle}>Recent Transactions</Text>
-              {transactions.length > 5 && (
-                <Pressable onPress={() => router.push('/insights')}>
-                  <Text style={s.viewAll}>View all</Text>
-                </Pressable>
-              )}
-            </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                {transactions.length > 5 && (
+                  <Pressable onPress={() => router.push('/insights')}>
+                    <Text style={s.viewAll}>View all</Text>
+                  </Pressable>
+                )}
+                <Ionicons name={openTransactions ? 'chevron-up' : 'chevron-down'} size={16} color={C.textMuted} />
+              </View>
+            </Pressable>
 
-            {transactions.length === 0 ? (
+            {openTransactions && (transactions.length === 0 ? (
               <View style={s.empty}>
                 <Ionicons name="receipt-outline" size={44} color={C.textMuted} />
                 <Text style={s.emptyTitle}>No transactions yet</Text>
@@ -361,22 +374,27 @@ export default function Index() {
                   </Text>
                 </Pressable>
               ))
-            )}
+            ))}
           </View>
 
-          {/* Market Insight Card */}
+          {/* Adviser Recommendations Card */}
           <View style={s.insightCard}>
-            <View style={s.insightHeader}>
+            <Pressable style={s.insightHeader} onPress={() => setOpenAdviser((v) => !v)}>
               <Ionicons name="trending-up" size={18} color={C.brandLight} />
-              <Text style={s.insightTitle}>Market Insight</Text>
-            </View>
-            <Text style={s.insightText}>
-              Your portfolio is visible to your assigned DWK adviser. They will reach out with personalised wealth management and portfolio analysis.
-            </Text>
-            <Pressable style={s.adviserBtn} onPress={() => router.push('/(tabs)/invest?tab=adviser' as any)}>
-              <Ionicons name="people-outline" size={16} color="#fff" />
-              <Text style={s.adviserBtnText}>Consult Adviser</Text>
+              <Text style={s.insightTitle}>Adviser's Recommendations</Text>
+              <Ionicons name={openAdviser ? 'chevron-up' : 'chevron-down'} size={16} color={C.textMuted} style={{ marginLeft: 'auto' }} />
             </Pressable>
+            {openAdviser && (
+              <>
+                <Text style={s.insightText}>
+                  Your portfolio is visible to your assigned DWK adviser. They will reach out with personalised wealth management and portfolio analysis.
+                </Text>
+                <Pressable style={s.adviserBtn} onPress={() => router.push('/(tabs)/invest?tab=adviser' as any)}>
+                  <Ionicons name="people-outline" size={16} color="#fff" />
+                  <Text style={s.adviserBtnText}>Consult Adviser</Text>
+                </Pressable>
+              </>
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -566,7 +584,7 @@ const s = StyleSheet.create({
   actionLabel: { fontSize: 11, color: C.textSecondary, fontWeight: '500' },
 
   section: { marginTop: 24, marginHorizontal: 20, backgroundColor: C.card, borderRadius: 20, borderWidth: 1, borderColor: C.border, overflow: 'hidden', marginBottom: 16 },
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: C.border },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: C.border, width: '100%' },
   sectionTitle: { fontSize: 16, fontWeight: '600', color: C.textPrimary },
   viewAll: { fontSize: 13, color: C.brandLight, fontWeight: '600' },
 
@@ -595,7 +613,7 @@ const s = StyleSheet.create({
   bankRowBalance: { fontSize: 15, fontWeight: '700' },
 
   insightCard: { marginHorizontal: 20, marginBottom: 8, backgroundColor: C.card, borderRadius: 20, borderWidth: 1, borderColor: C.brandBorder, padding: 18 },
-  insightHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  insightHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8, width: '100%' },
   insightTitle: { fontSize: 14, fontWeight: '600', color: C.textPrimary },
   insightText: { fontSize: 13, color: C.textSecondary, lineHeight: 20, marginBottom: 14 },
   adviserBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: C.brand, borderRadius: 12, paddingVertical: 11 },

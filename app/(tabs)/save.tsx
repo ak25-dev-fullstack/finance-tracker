@@ -26,7 +26,7 @@ type Goal = {
 
 const INITIAL_GOALS: Goal[] = [
   { id: '1', name: 'Emergency Fund', target: 5000, saved: 3200, deadline: 'Dec 2025', icon: 'shield-checkmark-outline', color: '#22C55E', smartAlert: true },
-  { id: '2', name: 'Holiday — Japan', target: 2500, saved: 840, deadline: 'Aug 2025', icon: 'airplane-outline', color: '#6bd8cb', smartAlert: false },
+  { id: '2', name: 'Holiday — Japan', target: 2500, saved: 840, deadline: 'Aug 2025', icon: 'airplane-outline', color: '#00b4d8', smartAlert: false },
   { id: '3', name: 'New Laptop', target: 1200, saved: 1200, deadline: 'Mar 2025', icon: 'laptop-outline', color: '#AB47BC', smartAlert: false },
 ];
 
@@ -34,7 +34,7 @@ const ICON_OPTIONS = [
   'home-outline', 'car-outline', 'airplane-outline', 'laptop-outline',
   'shield-checkmark-outline', 'heart-outline', 'school-outline', 'gift-outline',
 ];
-const COLOR_OPTIONS = ['#22C55E', '#6bd8cb', '#F59E0B', '#EF4444', '#AB47BC', '#42A5F5', '#FF7043', '#EC407A'];
+const COLOR_OPTIONS = ['#22C55E', '#00b4d8', '#F59E0B', '#EF4444', '#AB47BC', '#42A5F5', '#FF7043', '#EC407A'];
 
 export default function SaveScreen() {
   const router = useRouter();

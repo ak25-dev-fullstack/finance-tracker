@@ -15,10 +15,11 @@ function RootLayoutNav() {
     const inLogin = seg0 === 'login';
     const inRegister = seg0 === 'register';
     const inProfile = seg0 === 'profile';
+    const inSearch = seg0 === 'search';
 
     if (!user && !inLogin && !inRegister) {
       router.replace('/login');
-    } else if (user && (inLogin || inRegister || (!inTabs && !inProfile))) {
+    } else if (user && (inLogin || inRegister || (!inTabs && !inProfile && !inSearch))) {
       router.replace('/(tabs)');
     }
   }, [user, loading]);
@@ -50,7 +51,7 @@ function RootLayoutNav() {
             headerShown: true,
             headerTitle: 'Add Transaction',
             headerStyle: { backgroundColor: '#1E293B' },
-            headerTintColor: '#6bd8cb',
+            headerTintColor: '#00b4d8',
             headerShadowVisible: false,
             headerTitleStyle: { color: '#F8FAFC' },
           }}
@@ -61,7 +62,7 @@ function RootLayoutNav() {
             headerShown: true,
             headerTitle: 'Import',
             headerStyle: { backgroundColor: '#1E293B' },
-            headerTintColor: '#6bd8cb',
+            headerTintColor: '#00b4d8',
             headerShadowVisible: false,
             headerTitleStyle: { color: '#F8FAFC' },
           }}
@@ -72,9 +73,17 @@ function RootLayoutNav() {
             headerShown: true,
             headerTitle: 'Spending Insights',
             headerStyle: { backgroundColor: '#1E293B' },
-            headerTintColor: '#6bd8cb',
+            headerTintColor: '#00b4d8',
             headerShadowVisible: false,
             headerTitleStyle: { color: '#F8FAFC' },
+          }}
+        />
+        <Stack.Screen
+          name="search"
+          options={{
+            presentation: 'fullScreenModal',
+            headerShown: false,
+            animation: 'fade',
           }}
         />
       </Stack>

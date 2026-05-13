@@ -40,7 +40,7 @@ const HISTORY: HistoryEntry[] = [
 ];
 
 const HISTORY_TYPE_META: Record<HistoryEntry['type'], { label: string; icon: string; color: string }> = {
-  quick_message:          { label: 'Quick message',          icon: 'chatbubble-outline',         color: '#6bd8cb' },
+  quick_message:          { label: 'Quick message',          icon: 'chatbubble-outline',         color: '#00b4d8' },
   consultation_request:   { label: 'Consultation requested', icon: 'calendar-outline',            color: '#F59E0B' },
   consultation_completed: { label: 'Consultation completed', icon: 'checkmark-circle-outline',    color: '#22C55E' },
   adviser_recommendation: { label: 'Adviser recommendation', icon: 'bulb-outline',                color: '#42A5F5' },
@@ -52,6 +52,9 @@ const CONSULTATION_TYPES = ['Portfolio Review', 'Tax Planning', 'Retirement Plan
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function AdviserScreen() {
+  const [teamOpen, setTeamOpen] = useState(true);
+  const [recsOpen, setRecsOpen] = useState(true);
+
   const [messageOpen, setMessageOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [messageSent, setMessageSent] = useState(false);
@@ -88,8 +91,14 @@ export default function AdviserScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
 
         {/* Advisory team */}
-        <Text style={s.sectionTitle}>Your advisory team</Text>
-        {ADVISERS.map((adv) => (
+        <Pressable style={s.accordionHeader} onPress={() => setTeamOpen((o) => !o)}>
+          <View style={s.accordionIconWrap}>
+            <Ionicons name="people-outline" size={18} color={C.brandLight} />
+          </View>
+          <Text style={s.accordionTitle}>Your advisory team</Text>
+          <Ionicons name={teamOpen ? 'chevron-up' : 'chevron-down'} size={18} color={C.textMuted} />
+        </Pressable>
+        {teamOpen && ADVISERS.map((adv) => (
           <View key={adv.name} style={s.adviserCard}>
             <View style={[s.adviserAvatar, { backgroundColor: adv.color + '33' }]}>
               <Text style={[s.adviserAvatarText, { color: adv.color }]}>{adv.avatar}</Text>
@@ -104,8 +113,14 @@ export default function AdviserScreen() {
         ))}
 
         {/* Latest recommendations */}
-        <Text style={s.sectionTitle}>Latest recommendations</Text>
-        {LATEST_RECOMMENDATIONS.map((c) => (
+        <Pressable style={s.accordionHeader} onPress={() => setRecsOpen((o) => !o)}>
+          <View style={s.accordionIconWrap}>
+            <Ionicons name="bulb-outline" size={18} color={C.brandLight} />
+          </View>
+          <Text style={s.accordionTitle}>Latest recommendations</Text>
+          <Ionicons name={recsOpen ? 'chevron-up' : 'chevron-down'} size={18} color={C.textMuted} />
+        </Pressable>
+        {recsOpen && LATEST_RECOMMENDATIONS.map((c) => (
           <View key={c.id} style={s.commentCard}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 }}>
               <View style={s.commentAvatar}>

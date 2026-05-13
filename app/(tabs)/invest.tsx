@@ -1,16 +1,56 @@
-import React, { useState, useEffect } from 'react';
-import { useLocalSearchParams } from 'expo-router';
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  StyleSheet,
-  Modal,
-  TextInput,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { C } from '@/constants/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
+
+// ─── Portfolio history (last 12 months) ─────────────────────────────────────
+
+const PORTFOLIO_HISTORY = [14800, 16200, 15600, 17400, 18900, 19500, 18700, 20100, 21800, 22400, 20900, 21390];
+
+function MiniLineChart() {
+  const [width, setWidth] = useState(0);
+  const height = 56;
+  const pad = 2;
+
+  const min = Math.min(...PORTFOLIO_HISTORY);
+  const max = Math.max(...PORTFOLIO_HISTORY);
+  const range = max - min || 1;
+
+  const pts = PORTFOLIO_HISTORY.map((v, i) => ({
+    x: pad + (i / (PORTFOLIO_HISTORY.length - 1)) * (width - pad * 2),
+    y: pad + (1 - (v - min) / range) * (height - pad * 2),
+  }));
+
+  const line = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+  const area = `${line} L${pts[pts.length - 1].x},${height} L${pts[0].x},${height} Z`;
+
+  return (
+    <View style={{ marginTop: 16 }} onLayout={e => setWidth(e.nativeEvent.layout.width)}>
+      {width > 0 && (
+        <Svg width={width} height={height}>
+          <Defs>
+            <LinearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#fff" stopOpacity="0.18" />
+              <Stop offset="1" stopColor="#fff" stopOpacity="0" />
+            </LinearGradient>
+          </Defs>
+          <Path d={area} fill="url(#chartGrad)" />
+          <Path d={line} stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        </Svg>
+      )}
+    </View>
+  );
+}
 
 // ─── Shared data ────────────────────────────────────────────────────────────
 
@@ -24,7 +64,7 @@ type Holding = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  Stocks: '#42A5F5', ETFs: '#6bd8cb', Bonds: '#F59E0B',
+  Stocks: '#42A5F5', ETFs: '#00b4d8', Bonds: '#F59E0B',
   Crypto: '#FF7043', Cash: '#78909C', 'Real Estate': '#AB47BC',
 };
 const TYPE_ICONS: Record<string, string> = {
@@ -47,12 +87,12 @@ const HOLDINGS: Holding[] = [
 
 const CONNECTED_SOURCES = [
   { id: '1', name: 'Freetrade', type: 'Brokerage', accounts: 2, color: '#42A5F5', icon: 'trending-up-outline' },
-  { id: '2', name: 'Moneybox', type: 'ISA / LISA', accounts: 1, color: '#6bd8cb', icon: 'wallet-outline' },
+  { id: '2', name: 'Moneybox', type: 'ISA / LISA', accounts: 1, color: '#00b4d8', icon: 'wallet-outline' },
 ];
 
 const GOALS = [
   { id: '1', name: 'Retirement at 60', target: 500000, current: 40600, deadline: '2044', icon: 'leaf-outline', color: '#22C55E' },
-  { id: '2', name: 'Buy a property', target: 80000, current: 22400, deadline: '2028', icon: 'home-outline', color: '#6bd8cb' },
+  { id: '2', name: 'Buy a property', target: 80000, current: 22400, deadline: '2028', icon: 'home-outline', color: '#00b4d8' },
   { id: '3', name: 'Education fund', target: 30000, current: 8200, deadline: '2031', icon: 'school-outline', color: '#AB47BC' },
 ];
 
@@ -106,8 +146,8 @@ export default function InvestScreen() {
       {/* Content */}
       <View style={s.content}>
         {tab === 'portfolio' && <PortfolioTab total={total} />}
-        {tab === 'goals'     && <GoalsTab />}
-        {tab === 'upload'    && <UploadTab />}
+        {tab === 'goals' && <GoalsTab />}
+        {tab === 'upload' && <UploadTab />}
       </View>
     </View>
   );
@@ -138,6 +178,7 @@ function PortfolioTab({ total }: { total: number }) {
           <Ionicons name="trending-up" size={12} color={C.income} />
           <Text style={s.heroBadgeText}> +6.2% this year</Text>
         </View>
+        <MiniLineChart />
       </View>
 
       {/* Breakdown */}
@@ -299,7 +340,7 @@ function GoalsTab() {
   const [deadline, setDeadline] = useState('');
   const [pickedColor, setPickedColor] = useState('#22C55E');
 
-  const COLOR_OPTIONS = ['#22C55E', '#6bd8cb', '#F59E0B', '#EF4444', '#AB47BC', '#42A5F5', '#FF7043', '#EC407A'];
+  const COLOR_OPTIONS = ['#22C55E', '#00b4d8', '#F59E0B', '#EF4444', '#AB47BC', '#42A5F5', '#FF7043', '#EC407A'];
 
   const totalTargets = GOALS.reduce((s, g) => s + g.target, 0);
   const totalProgress = GOALS.reduce((s, g) => s + g.current, 0);
@@ -400,7 +441,7 @@ function GoalsTab() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  content: { flex: 1 },
+  content: { flex: 20 },
 
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, height: 80 },
   title: { fontSize: 24, fontWeight: '700', color: C.textPrimary },

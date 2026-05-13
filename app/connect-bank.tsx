@@ -119,6 +119,9 @@ export default function ConnectBank() {
   const [saving, setSaving] = useState(false);
   const [savedCount, setSavedCount] = useState(0);
 
+  // per-bank inline sync state
+  const [syncState, setSyncState] = useState<Record<string, 'syncing' | 'synced'>>({});
+
   useEffect(() => {
     AsyncStorage.getItem(CONNECTED_BANKS_KEY).then((d) => {
       if (d) setConnectedBanks(JSON.parse(d));
@@ -135,6 +138,42 @@ export default function ConnectBank() {
   };
 
   const handleAuthorize = () => setStep('success');
+
+  // ─── quick sync (auto-categorise + save inline, no review step) ──────────────
+
+  const handleQuickSync = async (bank: (typeof BANKS)[number]) => {
+    if (syncState[bank.id]) return;
+    setSyncState((p) => ({ ...p, [bank.id]: 'syncing' }));
+    try {
+      const rows = buildMockTransactions(bank.id as BankId);
+      const memory = await loadCategoryMemory();
+      let cats: CategorizationResult[];
+      try {
+        cats = await categorize(rows.map((r) => ({ id: r.id, description: r.description, amount: r.amount, type: r.type })), memory);
+      } catch {
+        cats = rows.map((r) => ({ id: r.id, category: 'Other', confidence: 'high' as const, fromMemory: false }));
+      }
+      const importId = `${bank.id}-sync-${Date.now()}`;
+      const memoryUpdates: Record<string, string> = {};
+      const transactions: Transaction[] = rows.map((row) => {
+        const category = cats.find((c) => c.id === row.id)?.category ?? 'Other';
+        memoryUpdates[normalizeKey(row.description)] = category;
+        return { id: row.id, date: row.date, amount: row.amount, category, description: row.description, type: row.type, source: 'monzo' as const, importId };
+      });
+      await appendTransactions(transactions);
+      await updateCategoryMemory(memoryUpdates);
+      await saveImportBatch({ id: importId, fileName: `${bank.name} sync`, date: new Date().toISOString(), count: rows.length });
+      const account = MOCK_ACCOUNT[bank.id as BankId];
+      const newBank: ConnectedBank = { id: bank.id, name: bank.name, color: bank.color, ...account, connectedAt: new Date().toISOString() };
+      const updated = [...connectedBanks.filter((b) => b.id !== bank.id), newBank];
+      await AsyncStorage.setItem(CONNECTED_BANKS_KEY, JSON.stringify(updated));
+      setConnectedBanks(updated);
+      setSyncState((p) => ({ ...p, [bank.id]: 'synced' }));
+    } catch {
+      Alert.alert('Sync failed', 'Could not sync transactions. Please try again.');
+      setSyncState((p) => { const n = { ...p }; delete n[bank.id]; return n; });
+    }
+  };
 
   // ─── sync → categorize → review ─────────────────────────────────────────────
 
@@ -271,12 +310,20 @@ export default function ConnectBank() {
                   </View>
                   <View style={{ alignItems: 'flex-end', gap: 6 }}>
                     <Text style={[s.connectedBalance, { color: C.income }]}>£{b.balance.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</Text>
-                    <View style={{ flexDirection: 'row', gap: 12 }}>
-                      {bankDef && (
-                        <Pressable onPress={() => handleSync(bankDef)}>
-                          <Text style={[s.disconnectText, { color: b.color }]}>Sync</Text>
-                        </Pressable>
-                      )}
+                    <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+                      {bankDef && (() => {
+                        const ss = syncState[b.id];
+                        return (
+                          <Pressable onPress={() => handleQuickSync(bankDef)} disabled={!!ss}>
+                            {ss === 'syncing'
+                              ? <ActivityIndicator size="small" color={b.color} />
+                              : <Text style={[s.disconnectText, { color: ss === 'synced' ? C.income : b.color }]}>
+                                  {ss === 'synced' ? 'Synced ✓' : 'Sync'}
+                                </Text>
+                            }
+                          </Pressable>
+                        );
+                      })()}
                       <Pressable onPress={() => handleDisconnect(b.id)}>
                         <Text style={s.disconnectText}>Disconnect</Text>
                       </Pressable>
@@ -402,10 +449,23 @@ export default function ConnectBank() {
               </Text>
             </View>
           </View>
-          <Pressable style={s.primaryBtn} onPress={() => selectedBank && handleSync(selectedBank)}>
-            <Ionicons name="sync-outline" size={18} color="#fff" />
-            <Text style={s.primaryBtnText}>Sync Transactions</Text>
-          </Pressable>
+          {(() => {
+            const ss = selectedBank ? syncState[selectedBank.id] : undefined;
+            return (
+              <Pressable
+                style={[s.primaryBtn, ss === 'synced' && { backgroundColor: C.income }, ss === 'syncing' && { opacity: 0.7 }]}
+                onPress={() => selectedBank && handleQuickSync(selectedBank)}
+                disabled={!!ss}
+              >
+                {ss === 'syncing'
+                  ? <ActivityIndicator color="#fff" size="small" />
+                  : ss === 'synced'
+                  ? <><Ionicons name="checkmark-circle" size={18} color="#fff" /><Text style={s.primaryBtnText}>Transactions synced</Text></>
+                  : <><Ionicons name="sync-outline" size={18} color="#fff" /><Text style={s.primaryBtnText}>Sync Transactions</Text></>
+                }
+              </Pressable>
+            );
+          })()}
           <Pressable style={s.ghostBtn} onPress={() => router.back()}>
             <Text style={s.ghostBtnText}>Done for now</Text>
           </Pressable>
