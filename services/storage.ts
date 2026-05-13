@@ -158,6 +158,21 @@ export async function clearAllData(): Promise<void> {
   ]);
 }
 
+export const ONBOARDING_KEY = 'onboarding_seen';
+
+export async function loadOnboardingSeen(): Promise<boolean> {
+  try {
+    const value = await AsyncStorage.getItem(ONBOARDING_KEY);
+    return value === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export async function saveOnboardingSeen(): Promise<void> {
+  await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+}
+
 export async function loadCustomCategoryColors(): Promise<Record<string, string>> {
   try {
     const data = await AsyncStorage.getItem(CUSTOM_COLORS_KEY);
