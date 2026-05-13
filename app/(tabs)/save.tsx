@@ -251,11 +251,11 @@ const s = StyleSheet.create({
   overviewAmount: { fontSize: 34, fontWeight: '700', color: '#fff', marginBottom: 14 },
   overviewSub: { fontSize: 12, color: 'rgba(255,255,255,0.65)', marginTop: 6 },
 
-  alertBanner: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 20, marginTop: 14, backgroundColor: C.warningBg, borderWidth: 1, borderColor: C.warningBorder, borderRadius: 14, padding: 14 },
+  alertBanner: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 20, marginTop: 16, backgroundColor: C.warningBg, borderWidth: 1, borderColor: C.warningBorder, borderRadius: 14, padding: 14 },
   alertBannerTitle: { fontSize: 13, fontWeight: '600', color: C.warning },
   alertBannerSub: { fontSize: 12, color: C.textMuted, marginTop: 2 },
 
-  sectionTitle: { fontSize: 16, fontWeight: '600', color: C.textPrimary, marginHorizontal: 20, marginTop: 22, marginBottom: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: '600', color: C.textPrimary, marginHorizontal: 20, marginTop: 16, marginBottom: 12 },
 
   goalCard: { marginHorizontal: 20, marginBottom: 14, backgroundColor: C.card, borderRadius: 18, borderWidth: 1, borderColor: C.border, padding: 18 },
   goalTop: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 },
@@ -300,7 +300,7 @@ const s = StyleSheet.create({
   saveBtn: { backgroundColor: C.brand, borderRadius: 14, paddingVertical: 15, alignItems: 'center' },
   saveBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
 
-  adviserCard: { marginHorizontal: 20, marginTop: 8, backgroundColor: C.card, borderRadius: 20, borderWidth: 1, borderColor: C.brandBorder, padding: 18 },
+  adviserCard: { marginHorizontal: 20, marginTop: 16, backgroundColor: C.card, borderRadius: 20, borderWidth: 1, borderColor: C.brandBorder, padding: 18 },
   adviserCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 },
   adviserIconWrap: { width: 46, height: 46, borderRadius: 23, backgroundColor: C.brandBg, borderWidth: 1, borderColor: C.brandBorder, alignItems: 'center', justifyContent: 'center' },
   adviserCardTitle: { fontSize: 15, fontWeight: '600', color: C.textPrimary },

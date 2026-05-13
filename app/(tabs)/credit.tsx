@@ -301,18 +301,18 @@ const s = StyleSheet.create({
   gaugeMax: { fontSize: 9, color: C.textMuted, position: 'absolute', top: 0, right: 0 },
   gaugeMin: { fontSize: 9, color: C.textMuted, position: 'absolute', bottom: 0, right: 0 },
 
-  tilesRow: { flexDirection: 'row', gap: 10, marginHorizontal: 20, marginTop: 14 },
+  tilesRow: { flexDirection: 'row', gap: 10, marginHorizontal: 20, marginTop: 16 },
   tile: { flex: 1, backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, padding: 14, alignItems: 'center', gap: 6 },
   tileVal: { fontSize: 14, fontWeight: '700', color: C.textPrimary },
   tileLabel: { fontSize: 10, color: C.textMuted, fontWeight: '500', textAlign: 'center' },
 
-  tabRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, marginTop: 22 },
+  tabRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, marginTop: 16 },
   tabBtn: { flex: 1, paddingVertical: 9, borderRadius: 12, borderWidth: 1.5, borderColor: C.border, alignItems: 'center', backgroundColor: C.card },
   tabBtnActive: { backgroundColor: C.brand, borderColor: C.brand },
   tabBtnText: { fontSize: 11, fontWeight: '600', color: C.textMuted },
   tabBtnTextActive: { color: '#fff' },
 
-  sectionTitle: { fontSize: 15, fontWeight: '600', color: C.textPrimary, marginHorizontal: 20, marginTop: 20, marginBottom: 12 },
+  sectionTitle: { fontSize: 15, fontWeight: '600', color: C.textPrimary, marginHorizontal: 20, marginTop: 16, marginBottom: 12 },
 
   itemCard: { marginHorizontal: 20, marginBottom: 12, backgroundColor: C.card, borderRadius: 18, borderWidth: 1, borderColor: C.border, padding: 16 },
   itemTop: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
@@ -343,10 +343,10 @@ const s = StyleSheet.create({
   equityVal: { fontSize: 15, fontWeight: '700', color: C.brandLight },
   equityPct: { fontSize: 12, color: C.textMuted },
 
-  pensionTip: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginHorizontal: 20, marginTop: 4, backgroundColor: C.brandBg, borderRadius: 14, borderWidth: 1, borderColor: C.brandBorder, padding: 14 },
+  pensionTip: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginHorizontal: 20, marginTop: 16, backgroundColor: C.brandBg, borderRadius: 14, borderWidth: 1, borderColor: C.brandBorder, padding: 14 },
   pensionTipText: { flex: 1, fontSize: 13, color: C.textSecondary, lineHeight: 20 },
 
-  adviserCard: { marginHorizontal: 20, marginTop: 20, backgroundColor: C.card, borderRadius: 20, borderWidth: 1, borderColor: C.brandBorder, padding: 18 },
+  adviserCard: { marginHorizontal: 20, marginTop: 16, backgroundColor: C.card, borderRadius: 20, borderWidth: 1, borderColor: C.brandBorder, padding: 18 },
   adviserCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 },
   adviserIconWrap: { width: 46, height: 46, borderRadius: 23, backgroundColor: C.brandBg, borderWidth: 1, borderColor: C.brandBorder, alignItems: 'center', justifyContent: 'center' },
   adviserCardTitle: { fontSize: 15, fontWeight: '600', color: C.textPrimary },
