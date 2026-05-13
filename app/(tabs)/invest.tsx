@@ -240,7 +240,10 @@ function PortfolioTab({ total }: { total: number }) {
 
 // ─── Upload tab ──────────────────────────────────────────────────────────────
 
+type UploadSubTab = 'connected' | 'statements' | 'manual';
+
 function UploadTab() {
+  const [subTab, setSubTab] = useState<UploadSubTab>('connected');
   const [showManual, setShowManual] = useState(false);
   const [manualName, setManualName] = useState('');
   const [manualTicker, setManualTicker] = useState('');
@@ -251,46 +254,72 @@ function UploadTab() {
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-      {/* Connected sources */}
-      <Text style={s.sectionTitle}>Connected accounts</Text>
-      {CONNECTED_SOURCES.map((src) => (
-        <View key={src.id} style={s.sourceCard}>
-          <View style={[s.sourceIcon, { backgroundColor: src.color + '22' }]}>
-            <Ionicons name={src.icon as any} size={20} color={src.color} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={s.sourceName}>{src.name}</Text>
-            <Text style={s.sourceSub}>{src.type} · {src.accounts} account{src.accounts > 1 ? 's' : ''}</Text>
-          </View>
-          <View style={s.connectedBadge}>
-            <Text style={s.connectedBadgeText}>Connected</Text>
-          </View>
-        </View>
-      ))}
-      <Pressable style={s.outlineBtn}>
-        <Ionicons name="link-outline" size={18} color={C.brandLight} />
-        <Text style={s.outlineBtnText}>Connect another account</Text>
-      </Pressable>
+      {/* Sub-tab pills */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 16 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
+        {([
+          { key: 'connected', label: 'Connected', icon: 'link-outline' },
+          { key: 'statements', label: 'Statements', icon: 'document-attach-outline' },
+          { key: 'manual', label: 'Manual entry', icon: 'add-circle-outline' },
+        ] as { key: UploadSubTab; label: string; icon: string }[]).map((t) => (
+          <Pressable key={t.key} style={[s.tabPill, subTab === t.key && s.tabPillActive]} onPress={() => setSubTab(t.key)}>
+            <Ionicons name={t.icon as any} size={16} color={subTab === t.key ? '#fff' : C.textMuted} />
+            <Text style={[s.tabPillText, subTab === t.key && s.tabPillTextActive]}>{t.label}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
 
-      {/* Upload PDFs */}
-      <Text style={s.sectionTitle}>Upload statements</Text>
-      <Pressable style={s.uploadCard}>
-        <View style={s.uploadIconWrap}>
-          <Ionicons name="document-attach-outline" size={28} color={C.brandLight} />
-        </View>
-        <Text style={s.uploadTitle}>Upload a PDF statement</Text>
-        <Text style={s.uploadSub}>We'll extract your holdings automatically from broker or pension statements</Text>
-        <View style={s.uploadBtn}>
-          <Text style={s.uploadBtnText}>Choose file</Text>
-        </View>
-      </Pressable>
+      {/* Connected */}
+      {subTab === 'connected' && (
+        <>
+          <Text style={s.sectionTitle}>Connected accounts</Text>
+          {CONNECTED_SOURCES.map((src) => (
+            <View key={src.id} style={s.sourceCard}>
+              <View style={[s.sourceIcon, { backgroundColor: src.color + '22' }]}>
+                <Ionicons name={src.icon as any} size={20} color={src.color} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={s.sourceName}>{src.name}</Text>
+                <Text style={s.sourceSub}>{src.type} · {src.accounts} account{src.accounts > 1 ? 's' : ''}</Text>
+              </View>
+              <View style={s.connectedBadge}>
+                <Text style={s.connectedBadgeText}>Connected</Text>
+              </View>
+            </View>
+          ))}
+          <Pressable style={s.outlineBtn}>
+            <Ionicons name="link-outline" size={18} color={C.brandLight} />
+            <Text style={s.outlineBtnText}>Connect another account</Text>
+          </Pressable>
+        </>
+      )}
 
-      {/* Manual entry */}
-      <Text style={s.sectionTitle}>Manual entry</Text>
-      <Pressable style={s.outlineBtn} onPress={() => setShowManual(true)}>
-        <Ionicons name="add-circle-outline" size={18} color={C.brandLight} />
-        <Text style={s.outlineBtnText}>Add holding manually</Text>
-      </Pressable>
+      {/* Statements */}
+      {subTab === 'statements' && (
+        <>
+          <Text style={s.sectionTitle}>Upload statements</Text>
+          <Pressable style={s.uploadCard}>
+            <View style={s.uploadIconWrap}>
+              <Ionicons name="document-attach-outline" size={28} color={C.brandLight} />
+            </View>
+            <Text style={s.uploadTitle}>Upload a PDF statement</Text>
+            <Text style={s.uploadSub}>We'll extract your holdings automatically from broker or pension statements</Text>
+            <View style={s.uploadBtn}>
+              <Text style={s.uploadBtnText}>Choose file</Text>
+            </View>
+          </Pressable>
+        </>
+      )}
+
+      {/* Manual */}
+      {subTab === 'manual' && (
+        <>
+          <Text style={s.sectionTitle}>Manual entry</Text>
+          <Pressable style={s.outlineBtn} onPress={() => setShowManual(true)}>
+            <Ionicons name="add-circle-outline" size={18} color={C.brandLight} />
+            <Text style={s.outlineBtnText}>Add holding manually</Text>
+          </Pressable>
+        </>
+      )}
 
       {/* Manual entry modal */}
       <Modal visible={showManual} animationType="slide" transparent onRequestClose={() => setShowManual(false)}>
