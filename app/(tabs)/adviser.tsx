@@ -52,8 +52,11 @@ const CONSULTATION_TYPES = ['Portfolio Review', 'Tax Planning', 'Retirement Plan
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function AdviserScreen() {
+  const [messageOpen, setMessageOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [messageSent, setMessageSent] = useState(false);
+
+  const [consultationOpen, setConsultationOpen] = useState(false);
   const [consultationType, setConsultationType] = useState('');
   const [consultationNote, setConsultationNote] = useState('');
   const [preferredTime, setPreferredTime] = useState('');
@@ -127,93 +130,109 @@ export default function AdviserScreen() {
         </View>
 
         {/* Send a quick message */}
-        <Text style={s.sectionTitle}>Send a quick message</Text>
-        <View style={s.card}>
-          {messageSent ? (
-            <View style={s.confirmBanner}>
-              <Ionicons name="checkmark-circle" size={20} color={C.income} />
-              <View style={{ flex: 1 }}>
-                <Text style={s.confirmTitle}>Message sent</Text>
-                <Text style={s.confirmSub}>You will be notified when your adviser replies.</Text>
+        <Pressable style={s.accordionHeader} onPress={() => setMessageOpen((o) => !o)}>
+          <View style={s.accordionIconWrap}>
+            <Ionicons name="chatbubble-outline" size={18} color={C.brandLight} />
+          </View>
+          <Text style={s.accordionTitle}>Send a quick message</Text>
+          <Ionicons name={messageOpen ? 'chevron-up' : 'chevron-down'} size={18} color={C.textMuted} />
+        </Pressable>
+        {messageOpen && (
+          <View style={s.card}>
+            {messageSent ? (
+              <View style={s.confirmBanner}>
+                <Ionicons name="checkmark-circle" size={20} color={C.income} />
+                <View style={{ flex: 1 }}>
+                  <Text style={s.confirmTitle}>Message sent</Text>
+                  <Text style={s.confirmSub}>You will be notified when your adviser replies.</Text>
+                </View>
+                <Pressable onPress={() => setMessageSent(false)}>
+                  <Ionicons name="close" size={18} color={C.textMuted} />
+                </Pressable>
               </View>
-              <Pressable onPress={() => setMessageSent(false)}>
-                <Ionicons name="close" size={18} color={C.textMuted} />
-              </Pressable>
-            </View>
-          ) : (
-            <>
-              <Text style={s.cardHint}>Ask a quick question or flag something to your adviser. Responses are usually within one business day.</Text>
-              <TextInput
-                style={[s.input, { height: 88, textAlignVertical: 'top' }]}
-                placeholder="e.g. Should I top up my ISA before the tax year ends?"
-                placeholderTextColor={C.textMuted}
-                value={message}
-                onChangeText={setMessage}
-                multiline
-              />
-              <Pressable style={[s.saveBtn, !message.trim() && { opacity: 0.4 }]} onPress={handleSendMessage} disabled={!message.trim()}>
-                <Text style={s.saveBtnText}>Send message</Text>
-              </Pressable>
-            </>
-          )}
-        </View>
+            ) : (
+              <>
+                <Text style={s.cardHint}>Ask a quick question or flag something to your adviser. Responses are usually within one business day.</Text>
+                <TextInput
+                  style={[s.input, { height: 88, textAlignVertical: 'top' }]}
+                  placeholder="e.g. Should I top up my ISA before the tax year ends?"
+                  placeholderTextColor={C.textMuted}
+                  value={message}
+                  onChangeText={setMessage}
+                  multiline
+                />
+                <Pressable style={[s.saveBtn, !message.trim() && { opacity: 0.4 }]} onPress={handleSendMessage} disabled={!message.trim()}>
+                  <Text style={s.saveBtnText}>Send message</Text>
+                </Pressable>
+              </>
+            )}
+          </View>
+        )}
 
         {/* Request a consultation */}
-        <Text style={s.sectionTitle}>Request a consultation</Text>
-        <View style={s.card}>
-          {consultationSent ? (
-            <View style={s.confirmBanner}>
-              <Ionicons name="checkmark-circle" size={20} color={C.income} />
-              <View style={{ flex: 1 }}>
-                <Text style={s.confirmTitle}>Consultation requested</Text>
-                <Text style={s.confirmSub}>Your adviser will confirm a time shortly. You will be notified when they respond.</Text>
+        <Pressable style={s.accordionHeader} onPress={() => setConsultationOpen((o) => !o)}>
+          <View style={s.accordionIconWrap}>
+            <Ionicons name="calendar-outline" size={18} color={C.brandLight} />
+          </View>
+          <Text style={s.accordionTitle}>Request a consultation</Text>
+          <Ionicons name={consultationOpen ? 'chevron-up' : 'chevron-down'} size={18} color={C.textMuted} />
+        </Pressable>
+        {consultationOpen && (
+          <View style={s.card}>
+            {consultationSent ? (
+              <View style={s.confirmBanner}>
+                <Ionicons name="checkmark-circle" size={20} color={C.income} />
+                <View style={{ flex: 1 }}>
+                  <Text style={s.confirmTitle}>Consultation requested</Text>
+                  <Text style={s.confirmSub}>Your adviser will confirm a time shortly. You will be notified when they respond.</Text>
+                </View>
+                <Pressable onPress={() => setConsultationSent(false)}>
+                  <Ionicons name="close" size={18} color={C.textMuted} />
+                </Pressable>
               </View>
-              <Pressable onPress={() => setConsultationSent(false)}>
-                <Ionicons name="close" size={18} color={C.textMuted} />
-              </Pressable>
-            </View>
-          ) : (
-            <>
-              <Text style={s.cardHint}>Book a scheduled call or video meeting with your DWK adviser to discuss your financial plan in depth.</Text>
-              <Text style={s.fieldLabel}>Type of consultation</Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-                {CONSULTATION_TYPES.map((t) => (
-                  <Pressable
-                    key={t}
-                    style={[s.filterPill, consultationType === t && s.filterPillActive]}
-                    onPress={() => setConsultationType(t)}
-                  >
-                    <Text style={[s.filterPillText, consultationType === t && s.filterPillTextActive]}>{t}</Text>
-                  </Pressable>
-                ))}
-              </View>
-              <Text style={s.fieldLabel}>Preferred date / time</Text>
-              <TextInput
-                style={s.input}
-                placeholder="e.g. Any afternoon next week"
-                placeholderTextColor={C.textMuted}
-                value={preferredTime}
-                onChangeText={setPreferredTime}
-              />
-              <Text style={s.fieldLabel}>Additional context (optional)</Text>
-              <TextInput
-                style={[s.input, { height: 72, textAlignVertical: 'top' }]}
-                placeholder="Brief description of what you'd like to discuss…"
-                placeholderTextColor={C.textMuted}
-                value={consultationNote}
-                onChangeText={setConsultationNote}
-                multiline
-              />
-              <Pressable
-                style={[s.saveBtn, !consultationType && { opacity: 0.4 }]}
-                onPress={handleRequestConsultation}
-                disabled={!consultationType}
-              >
-                <Text style={s.saveBtnText}>Request consultation</Text>
-              </Pressable>
-            </>
-          )}
-        </View>
+            ) : (
+              <>
+                <Text style={s.cardHint}>Book a scheduled call or video meeting with your DWK adviser to discuss your financial plan in depth.</Text>
+                <Text style={s.fieldLabel}>Type of consultation</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                  {CONSULTATION_TYPES.map((t) => (
+                    <Pressable
+                      key={t}
+                      style={[s.filterPill, consultationType === t && s.filterPillActive]}
+                      onPress={() => setConsultationType(t)}
+                    >
+                      <Text style={[s.filterPillText, consultationType === t && s.filterPillTextActive]}>{t}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <Text style={s.fieldLabel}>Preferred date / time</Text>
+                <TextInput
+                  style={s.input}
+                  placeholder="e.g. Any afternoon next week"
+                  placeholderTextColor={C.textMuted}
+                  value={preferredTime}
+                  onChangeText={setPreferredTime}
+                />
+                <Text style={s.fieldLabel}>Additional context (optional)</Text>
+                <TextInput
+                  style={[s.input, { height: 72, textAlignVertical: 'top' }]}
+                  placeholder="Brief description of what you'd like to discuss…"
+                  placeholderTextColor={C.textMuted}
+                  value={consultationNote}
+                  onChangeText={setConsultationNote}
+                  multiline
+                />
+                <Pressable
+                  style={[s.saveBtn, !consultationType && { opacity: 0.4 }]}
+                  onPress={handleRequestConsultation}
+                  disabled={!consultationType}
+                >
+                  <Text style={s.saveBtnText}>Request consultation</Text>
+                </Pressable>
+              </>
+            )}
+          </View>
+        )}
 
         {/* History */}
         <Text style={s.sectionTitle}>History</Text>
@@ -248,6 +267,10 @@ const s = StyleSheet.create({
   sub: { fontSize: 13, color: C.textMuted, marginTop: 2 },
 
   sectionTitle: { fontSize: 15, fontWeight: '600', color: C.textPrimary, marginHorizontal: 20, marginTop: 22, marginBottom: 12 },
+
+  accordionHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: 20, marginTop: 18, marginBottom: 4, backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, paddingHorizontal: 16, paddingVertical: 14 },
+  accordionIconWrap: { width: 34, height: 34, borderRadius: 10, backgroundColor: C.brandBg, borderWidth: 1, borderColor: C.brandBorder, alignItems: 'center', justifyContent: 'center' },
+  accordionTitle: { flex: 1, fontSize: 15, fontWeight: '600', color: C.textPrimary },
   card: { marginHorizontal: 20, backgroundColor: C.card, borderRadius: 18, borderWidth: 1, borderColor: C.border, padding: 18 },
 
   adviserCard: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: 20, marginBottom: 10, backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, padding: 14 },
