@@ -577,12 +577,12 @@ const s = StyleSheet.create({
   summaryLabel: { fontSize: 12, color: C.textMuted, fontWeight: '500', marginBottom: 4 },
   summaryAmount: { fontSize: 18, fontWeight: '700' },
 
-  actionsRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, marginTop: 20 },
+  actionsRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, marginTop: 16 },
   actionBtn: { alignItems: 'center', gap: 6 },
   actionIcon: { width: 52, height: 52, borderRadius: 26, backgroundColor: C.card, borderWidth: 1, borderColor: C.border, alignItems: 'center', justifyContent: 'center' },
   actionLabel: { fontSize: 11, color: C.textSecondary, fontWeight: '500' },
 
-  section: { marginTop: 24, marginHorizontal: 20, backgroundColor: C.card, borderRadius: 20, borderWidth: 1, borderColor: C.border, overflow: 'hidden', marginBottom: 16 },
+  section: { marginTop: 16, marginHorizontal: 20, backgroundColor: C.card, borderRadius: 20, borderWidth: 1, borderColor: C.border, overflow: 'hidden', marginBottom: 0 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: C.border, width: '100%' },
   sectionTitle: { fontSize: 16, fontWeight: '600', color: C.textPrimary },
   viewAll: { fontSize: 13, color: C.brandLight, fontWeight: '600' },
@@ -611,7 +611,7 @@ const s = StyleSheet.create({
   bankRowMeta: { fontSize: 12, color: C.textMuted, marginTop: 1 },
   bankRowBalance: { fontSize: 15, fontWeight: '700' },
 
-  insightCard: { marginHorizontal: 20, marginBottom: 8, backgroundColor: C.card, borderRadius: 20, borderWidth: 1, borderColor: C.brandBorder, padding: 18 },
+  insightCard: { marginTop: 16, marginHorizontal: 20, marginBottom: 8, backgroundColor: C.card, borderRadius: 20, borderWidth: 1, borderColor: C.brandBorder, padding: 18 },
   insightHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8, width: '100%' },
   insightTitle: { fontSize: 14, fontWeight: '600', color: C.textPrimary },
   insightText: { fontSize: 13, color: C.textSecondary, lineHeight: 20, marginBottom: 14 },
