@@ -400,7 +400,7 @@ function GoalsTab() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  content: { height:570 },
+  content: { flex: 1 },
 
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, height: 80 },
   title: { fontSize: 24, fontWeight: '700', color: C.textPrimary },
