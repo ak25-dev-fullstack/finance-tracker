@@ -1,5 +1,6 @@
 import Logo from '@/app/components/Logo';
 import { C } from '@/constants/theme';
+import { useOnboardingTarget } from '@/context/onboarding';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -246,6 +247,8 @@ const TABS: { key: Tab; label: string; icon: string }[] = [
 export default function InvestScreen() {
   const { tab: tabParam } = useLocalSearchParams<{ tab?: Tab }>();
   const [tab, setTab] = useState<Tab>('portfolio');
+  const portfolioTabRef = useOnboardingTarget('invest_portfolio');
+  const uploadTabRef = useOnboardingTarget('invest_upload');
 
   useEffect(() => {
     if (tabParam && (['portfolio', 'goals', 'upload'] as Tab[]).includes(tabParam)) {
@@ -272,10 +275,16 @@ export default function InvestScreen() {
       {/* Sub-tab bar */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.tabBar} contentContainerStyle={s.tabBarContent}>
         {TABS.map((t) => (
-          <Pressable key={t.key} style={[s.tabPill, tab === t.key && s.tabPillActive]} onPress={() => setTab(t.key)}>
-            <Ionicons name={t.icon as any} size={16} color={tab === t.key ? '#fff' : C.textMuted} />
-            <Text style={[s.tabPillText, tab === t.key && s.tabPillTextActive]}>{t.label}</Text>
-          </Pressable>
+          <View
+            key={t.key}
+            ref={t.key === 'portfolio' ? portfolioTabRef : t.key === 'upload' ? uploadTabRef : undefined}
+            collapsable={false}
+          >
+            <Pressable style={[s.tabPill, tab === t.key && s.tabPillActive]} onPress={() => setTab(t.key)}>
+              <Ionicons name={t.icon as any} size={16} color={tab === t.key ? '#fff' : C.textMuted} />
+              <Text style={[s.tabPillText, tab === t.key && s.tabPillTextActive]}>{t.label}</Text>
+            </Pressable>
+          </View>
         ))}
       </ScrollView>
 

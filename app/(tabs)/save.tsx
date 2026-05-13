@@ -1,17 +1,18 @@
 import Logo from '@/app/components/Logo';
 import { C } from '@/constants/theme';
+import { useOnboardingTarget } from '@/context/onboarding';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  View,
+    Modal,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Switch,
+    Text,
+    TextInput,
+    View,
 } from 'react-native';
 
 type Goal = {
@@ -48,6 +49,8 @@ export default function SaveScreen() {
   const [pickedIcon, setPickedIcon] = useState(ICON_OPTIONS[0]);
   const [pickedColor, setPickedColor] = useState(COLOR_OPTIONS[0]);
   const [smartAlert, setSmartAlert] = useState(false);
+  const addGoalRef = useOnboardingTarget('save_add_goal');
+  const adviserRef = useOnboardingTarget('save_adviser');
 
   const totalSaved = goals.reduce((s, g) => s + g.saved, 0);
   const totalTarget = goals.reduce((s, g) => s + g.target, 0);
@@ -85,9 +88,11 @@ export default function SaveScreen() {
             <Text style={[s.title, { marginTop: 6 }]}>Save</Text>
             <Text style={s.sub}>Track your savings goals</Text>
           </View>
-          <Pressable style={s.addBtn} onPress={() => setShowModal(true)}>
-            <Ionicons name="add" size={22} color="#fff" />
-          </Pressable>
+          <View ref={addGoalRef} collapsable={false}>
+            <Pressable style={s.addBtn} onPress={() => setShowModal(true)}>
+              <Ionicons name="add" size={22} color="#fff" />
+            </Pressable>
+          </View>
         </View>
 
         {/* Overview */}
@@ -173,10 +178,12 @@ export default function SaveScreen() {
               <Text style={s.adviserCardSub}>Get personalised savings advice from your DWK adviser</Text>
             </View>
           </View>
-          <Pressable style={s.adviserBtn} onPress={() => router.push('/(tabs)/adviser')}>
-            <Text style={s.adviserBtnText}>Consult Adviser</Text>
-            <Ionicons name="arrow-forward" size={16} color="#fff" />
-          </Pressable>
+          <View ref={adviserRef} collapsable={false}>
+            <Pressable style={s.adviserBtn} onPress={() => router.push('/(tabs)/adviser')}>
+              <Text style={s.adviserBtnText}>Consult Adviser</Text>
+              <Ionicons name="arrow-forward" size={16} color="#fff" />
+            </Pressable>
+          </View>
         </View>
       </ScrollView>
 

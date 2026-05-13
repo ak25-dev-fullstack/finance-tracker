@@ -1,4 +1,5 @@
 import { C } from '@/constants/theme';
+import { useOnboardingTarget } from '@/context/onboarding';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
@@ -67,6 +68,8 @@ export default function AdviserScreen() {
   const [consultationSent, setConsultationSent] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [portfolioOpen, setPortfolioOpen] = useState(false);
+  const adviserTeamRef = useOnboardingTarget('adviser_team');
+  const adviserMessageRef = useOnboardingTarget('adviser_message');
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
@@ -95,13 +98,15 @@ export default function AdviserScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
 
         {/* Advisory team */}
-        <Pressable style={s.accordionHeader} onPress={() => setTeamOpen((o) => !o)}>
-          <View style={s.accordionIconWrap}>
-            <Ionicons name="people-outline" size={18} color={C.brandLight} />
-          </View>
-          <Text style={s.accordionTitle}>Your advisory team</Text>
-          <Ionicons name={teamOpen ? 'chevron-up' : 'chevron-down'} size={18} color={C.textMuted} />
-        </Pressable>
+        <View ref={adviserTeamRef} collapsable={false}>
+          <Pressable style={s.accordionHeader} onPress={() => setTeamOpen((o) => !o)}>
+            <View style={s.accordionIconWrap}>
+              <Ionicons name="people-outline" size={18} color={C.brandLight} />
+            </View>
+            <Text style={s.accordionTitle}>Your advisory team</Text>
+            <Ionicons name={teamOpen ? 'chevron-up' : 'chevron-down'} size={18} color={C.textMuted} />
+          </Pressable>
+        </View>
         {teamOpen && ADVISERS.map((adv) => (
           <View key={adv.name} style={s.adviserCard}>
             <View style={[s.adviserAvatar, { backgroundColor: adv.color + '33' }]}>
@@ -158,13 +163,15 @@ export default function AdviserScreen() {
         )}
 
         {/* Send a quick message */}
-        <Pressable style={s.accordionHeader} onPress={() => setMessageOpen((o) => !o)}>
-          <View style={s.accordionIconWrap}>
-            <Ionicons name="chatbubble-outline" size={18} color={C.brandLight} />
-          </View>
-          <Text style={s.accordionTitle}>Send a quick message</Text>
-          <Ionicons name={messageOpen ? 'chevron-up' : 'chevron-down'} size={18} color={C.textMuted} />
-        </Pressable>
+        <View ref={adviserMessageRef} collapsable={false}>
+          <Pressable style={s.accordionHeader} onPress={() => setMessageOpen((o) => !o)}>
+            <View style={s.accordionIconWrap}>
+              <Ionicons name="chatbubble-outline" size={18} color={C.brandLight} />
+            </View>
+            <Text style={s.accordionTitle}>Send a quick message</Text>
+            <Ionicons name={messageOpen ? 'chevron-up' : 'chevron-down'} size={18} color={C.textMuted} />
+          </Pressable>
+        </View>
         {messageOpen && (
           <View style={s.card}>
             {messageSent ? (

@@ -1,7 +1,8 @@
-import { CONNECTED_BANKS_KEY, ConnectedBank } from '@/app/connect-bank';
 import Logo from '@/app/components/Logo';
+import { CONNECTED_BANKS_KEY, ConnectedBank } from '@/app/connect-bank';
 import { C, COLOR_PALETTE, getCategoryColor } from '@/constants/theme';
 import { useAuth } from '@/context/auth';
+import { useOnboardingTarget } from '@/context/onboarding';
 import { CATEGORIES, runAgentCommand } from '@/services/categorizer';
 import {
   bulkUpdateCategory,
@@ -55,6 +56,9 @@ export default function Index() {
   const [openAccounts, setOpenAccounts] = useState(true);
   const [openTransactions, setOpenTransactions] = useState(true);
   const [openAdviser, setOpenAdviser] = useState(true);
+
+  const addActionRef = useOnboardingTarget('home_actions');
+  const connectBankRef = useOnboardingTarget('home_connect');
 
   const catColor = (cat: string) => getCategoryColor(cat, customColors);
 
@@ -280,17 +284,19 @@ export default function Index() {
           {/* Quick Actions */}
           <View style={s.actionsRow}>
             {[
-              { icon: 'add-circle-outline', label: 'Add', action: () => router.push('/add-transaction') },
+              { icon: 'add-circle-outline', label: 'Add', action: () => router.push('/add-transaction'), ref: addActionRef },
               { icon: 'cloud-upload-outline', label: 'Import', action: () => router.push('/import') },
               { icon: 'bar-chart-outline', label: 'Insights', action: () => router.push('/insights') },
               { icon: 'chatbubble-ellipses-outline', label: 'AI Chat', action: () => setShowAgent(true) },
             ].map((item) => (
-              <Pressable key={item.label} style={s.actionBtn} onPress={item.action}>
-                <View style={s.actionIcon}>
-                  <Ionicons name={item.icon as any} size={22} color={C.brandLight} />
-                </View>
-                <Text style={s.actionLabel}>{item.label}</Text>
-              </Pressable>
+              <View key={item.label} ref={item.ref} collapsable={false}>
+                <Pressable style={s.actionBtn} onPress={item.action}>
+                  <View style={s.actionIcon}>
+                    <Ionicons name={item.icon as any} size={22} color={C.brandLight} />
+                  </View>
+                  <Text style={s.actionLabel}>{item.label}</Text>
+                </Pressable>
+              </View>
             ))}
           </View>
 
@@ -306,7 +312,7 @@ export default function Index() {
               </View>
             </Pressable>
             {openAccounts && (connectedBanks.length === 0 ? (
-              <Pressable style={s.connectBankBtn} onPress={() => router.push('/connect-bank')}>
+              <Pressable ref={connectBankRef} style={s.connectBankBtn} onPress={() => router.push('/connect-bank')}>
                 <View style={s.connectBankIcon}>
                   <Ionicons name="link-outline" size={20} color={C.brandLight} />
                 </View>

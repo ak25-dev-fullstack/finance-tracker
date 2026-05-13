@@ -1,14 +1,15 @@
 import Logo from '@/app/components/Logo';
 import { C } from '@/constants/theme';
+import { useOnboardingTarget } from '@/context/onboarding';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 
 type Section = 'overview' | 'loans' | 'pension' | 'mortgage';
@@ -59,6 +60,8 @@ function scoreLabel(score: number) {
 export default function CreditScreen() {
   const router = useRouter();
   const [section, setSection] = useState<Section>('overview');
+  const scoreCardRef = useOnboardingTarget('credit_score');
+  const sectionTabsRef = useOnboardingTarget('credit_sections');
 
   const totalDebt = LOANS.reduce((s, l) => s + l.balance, 0) + DEBTS.reduce((s, d) => s + d.balance, 0) + MORTGAGE.remaining;
   const totalPension = PENSIONS.reduce((s, p) => s + p.value, 0);
@@ -76,30 +79,23 @@ export default function CreditScreen() {
         </View>
 
         {/* Credit Score */}
-        <View style={s.scoreCard}>
-          <View style={s.scoreLeft}>
-            <Text style={s.scoreLabel}>Credit Score</Text>
-            <Text style={[s.scoreNumber, { color: scoreColor(CREDIT_SCORE) }]}>{CREDIT_SCORE}</Text>
-            <View style={[s.scoreBadge, { backgroundColor: scoreColor(CREDIT_SCORE) + '22' }]}>
-              <Text style={[s.scoreBadgeText, { color: scoreColor(CREDIT_SCORE) }]}>{scoreLabel(CREDIT_SCORE)}</Text>
+        <View ref={scoreCardRef} collapsable={false}>
+          <View style={s.scoreCard}>
+            <View style={s.scoreLeft}>
+              <Text style={s.scoreLabel}>Credit Score</Text>
+              <Text style={[s.scoreNumber, { color: scoreColor(CREDIT_SCORE) }]}>{CREDIT_SCORE}</Text>
+              <View style={[s.scoreBadge, { backgroundColor: scoreColor(CREDIT_SCORE) + '22' }]}>
+                <Text style={[s.scoreBadgeText, { color: scoreColor(CREDIT_SCORE) }]}>{scoreLabel(CREDIT_SCORE)}</Text>
+              </View>
+              <Text style={s.scoreProvider}>Equifax · Updated today</Text>
             </View>
-            <Text style={s.scoreProvider}>Equifax · Updated today</Text>
-          </View>
-          <View style={s.scoreGauge}>
-            <View style={s.gaugeTrack}>
-              <View style={[s.gaugeFill, { height: `${(CREDIT_SCORE / SCORE_MAX) * 100}%` as any, backgroundColor: scoreColor(CREDIT_SCORE) }]} />
+            <View style={s.scoreGauge}>
+              <View style={s.gaugeTrack}>
+                <View style={[s.gaugeFill, { height: `${(CREDIT_SCORE / SCORE_MAX) * 100}%` as any, backgroundColor: scoreColor(CREDIT_SCORE) }]} />
+              </View>
+              <Text style={s.gaugeMax}>{SCORE_MAX}</Text>
+              <Text style={s.gaugeMin}>0</Text>
             </View>
-            <Text style={s.gaugeMax}>{SCORE_MAX}</Text>
-            <Text style={s.gaugeMin}>0</Text>
-          </View>
-        </View>
-
-        {/* Overview tiles */}
-        <View style={s.tilesRow}>
-          <View style={s.tile}>
-            <Ionicons name="alert-circle-outline" size={18} color={C.destructive} />
-            <Text style={s.tileVal}>£{totalDebt.toLocaleString('en-GB')}</Text>
-            <Text style={s.tileLabel}>Total Debt</Text>
           </View>
           <View style={s.tile}>
             <Ionicons name="leaf-outline" size={18} color={C.income} />
@@ -114,14 +110,16 @@ export default function CreditScreen() {
         </View>
 
         {/* Section Tabs */}
-        <View style={s.tabRow}>
-          {(['overview', 'loans', 'mortgage', 'pension'] as Section[]).map((sec) => (
-            <Pressable key={sec} style={[s.tabBtn, section === sec && s.tabBtnActive]} onPress={() => setSection(sec)}>
-              <Text style={[s.tabBtnText, section === sec && s.tabBtnTextActive]}>
-                {sec.charAt(0).toUpperCase() + sec.slice(1)}
-              </Text>
-            </Pressable>
-          ))}
+        <View ref={sectionTabsRef} collapsable={false}>
+          <View style={s.tabRow}>
+            {(['overview', 'loans', 'mortgage', 'pension'] as Section[]).map((sec) => (
+              <Pressable key={sec} style={[s.tabBtn, section === sec && s.tabBtnActive]} onPress={() => setSection(sec)}>
+                <Text style={[s.tabBtnText, section === sec && s.tabBtnTextActive]}>
+                  {sec.charAt(0).toUpperCase() + sec.slice(1)}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
 
         {/* Overview */}
