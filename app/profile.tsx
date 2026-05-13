@@ -8,6 +8,7 @@ import {
   Alert,
   Share,
   Switch,
+  Platform,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -73,13 +74,21 @@ export default function Profile() {
   };
 
   const handleClearData = () => {
+    const message = 'Are you sure you want to delete this data? This will permanently delete all your transactions and import history and cannot be undone.';
+    if (Platform.OS === 'web') {
+      if (!window.confirm(message)) return;
+      clearAllData()
+        .then(() => { setTxCount(0); setBatchCount(0); window.alert('All local data has been cleared.'); })
+        .catch(() => { window.alert('Could not clear data. Please try again.'); });
+      return;
+    }
     Alert.alert(
-      'Clear all data',
+      'Are you sure you want to delete this data?',
       'This will permanently delete all your transactions and import history. This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Clear data', style: 'destructive',
+          text: 'Delete data', style: 'destructive',
           onPress: async () => {
             try {
               await clearAllData();
