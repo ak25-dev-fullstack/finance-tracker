@@ -377,15 +377,14 @@ function GoalsTab() {
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
       {/* Summary */}
-      <View style={s.heroCard}>
+      <View style={[s.heroCard, { backgroundColor: '#0A1A2F' }]}>
         <Text style={s.heroLabel}>Total progress across goals</Text>
         <Text style={s.heroAmount}>£{totalProgress.toLocaleString('en-GB')}</Text>
-        <View style={[s.barWrap, { marginTop: 14 }]}>
-          <View style={[s.barFill, { width: `${(totalProgress / totalTargets) * 100}%` as any, backgroundColor: C.brandLight }]} />
+        <View style={s.heroBadge}>
+          <Ionicons name="flag" size={12} color={C.income} />
+          <Text style={s.heroBadgeText}> {((totalProgress / totalTargets) * 100).toFixed(0)}% of £{totalTargets.toLocaleString('en-GB')} target</Text>
         </View>
-        <Text style={s.heroBadgeText2}>
-          {((totalProgress / totalTargets) * 100).toFixed(0)}% of £{totalTargets.toLocaleString('en-GB')} total
-        </Text>
+        <MiniLineChart />
       </View>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 20, marginTop: 16, marginBottom: 12 }}>
