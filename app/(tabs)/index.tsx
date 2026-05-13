@@ -14,6 +14,7 @@ import {
   updateTransactionCategory,
   updateTransactionName
 } from '@/services/storage';
+import { exportTransactionsCsv, exportTransactionsPdf } from '@/services/export';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -226,23 +227,29 @@ export default function Index() {
               <Text style={s.subGreeting}>{user?.name ?? 'Personal Account'}</Text>
             </View>
             <View style={s.headerActions}>
-              <Pressable style={s.avatarBtn} onPress={() => router.push('/search')}>
+              <Pressable style={s.avatarBtn} onPress={() => router.push('/search')} accessibilityRole="button" accessibilityLabel="Search transactions">
                 <Ionicons name="search-outline" size={18} color={C.brandLight} />
               </Pressable>
               <Pressable
                 style={s.avatarBtn}
                 onPress={() => router.push('/profile')}
+                accessibilityRole="button"
+                accessibilityLabel="View profile"
               >
                 <Ionicons name="person" size={18} color={C.brandLight} />
               </Pressable>
-              <Pressable style={s.logoutBtn} onPress={() => logout()}>
+              <Pressable style={s.logoutBtn} onPress={() => { logout(); router.replace('/login'); }} accessibilityRole="button" accessibilityLabel="Sign out">
                 <Ionicons name="log-out-outline" size={20} color={C.expense} />
               </Pressable>
             </View>
           </View>
 
           {/* Balance Card */}
-          <View style={s.balanceCard}>
+          <View
+            style={s.balanceCard}
+            accessible
+            accessibilityLabel={`Total balance: £${Math.abs(balance).toLocaleString('en-GB', { minimumFractionDigits: 2 })}. ${balance >= 0 ? 'Positive' : 'Negative'} balance`}
+          >
             <Text style={s.balanceLabel}>Total Balance</Text>
             <Text style={s.balanceAmount}>
               £{Math.abs(balance).toLocaleString('en-GB', { minimumFractionDigits: 2 })}
@@ -252,6 +259,7 @@ export default function Index() {
                 name={balance >= 0 ? 'trending-up' : 'trending-down'}
                 size={12}
                 color={balance >= 0 ? C.income : C.expense}
+                accessibilityElementsHidden
               />
               <Text style={[s.balanceBadgeText, { color: balance >= 0 ? C.income : C.expense }]}>
                 {balance >= 0 ? ' Positive' : ' Negative'} balance
@@ -261,18 +269,18 @@ export default function Index() {
 
           {/* Summary Row */}
           <View style={s.summaryRow}>
-            <View style={[s.summaryCard, { borderColor: C.incomeBorder }]}>
+            <View style={[s.summaryCard, { borderColor: C.incomeBorder }]} accessible accessibilityLabel={`Income: £${totalIncome.toLocaleString('en-GB', { minimumFractionDigits: 2 })}`}>
               <View style={[s.summaryIcon, { backgroundColor: C.incomeBg }]}>
-                <Ionicons name="arrow-down" size={16} color={C.income} />
+                <Ionicons name="arrow-down" size={16} color={C.income} accessibilityElementsHidden />
               </View>
               <Text style={s.summaryLabel}>Income</Text>
               <Text style={[s.summaryAmount, { color: C.income }]}>
                 £{totalIncome.toLocaleString('en-GB', { minimumFractionDigits: 2 })}
               </Text>
             </View>
-            <View style={[s.summaryCard, { borderColor: C.expenseBorder }]}>
+            <View style={[s.summaryCard, { borderColor: C.expenseBorder }]} accessible accessibilityLabel={`Expenses: £${totalExpense.toLocaleString('en-GB', { minimumFractionDigits: 2 })}`}>
               <View style={[s.summaryIcon, { backgroundColor: C.expenseBg }]}>
-                <Ionicons name="arrow-up" size={16} color={C.expense} />
+                <Ionicons name="arrow-up" size={16} color={C.expense} accessibilityElementsHidden />
               </View>
               <Text style={s.summaryLabel}>Expenses</Text>
               <Text style={[s.summaryAmount, { color: C.expense }]}>
@@ -289,12 +297,12 @@ export default function Index() {
               { icon: 'bar-chart-outline', label: 'Insights', action: () => router.push('/insights') },
               { icon: 'chatbubble-ellipses-outline', label: 'AI Chat', action: () => setShowAgent(true) },
             ].map((item) => (
-              <View key={item.label} ref={item.ref} collapsable={false}>
-                <Pressable style={s.actionBtn} onPress={item.action}>
+              <View key={item.label} ref={(item as any).ref} collapsable={false}>
+                <Pressable style={s.actionBtn} onPress={item.action} accessibilityRole="button" accessibilityLabel={item.label}>
                   <View style={s.actionIcon}>
-                    <Ionicons name={item.icon as any} size={22} color={C.brandLight} />
+                    <Ionicons name={item.icon as any} size={22} color={C.brandLight} accessibilityElementsHidden />
                   </View>
-                  <Text style={s.actionLabel}>{item.label}</Text>
+                  <Text style={s.actionLabel} importantForAccessibility="no">{item.label}</Text>
                 </Pressable>
               </View>
             ))}
@@ -302,25 +310,25 @@ export default function Index() {
 
           {/* Connected Banks */}
           <View style={s.section}>
-            <Pressable style={s.sectionHeader} onPress={() => setOpenAccounts((v) => !v)}>
+            <Pressable style={s.sectionHeader} onPress={() => setOpenAccounts((v) => !v)} accessibilityRole="button" accessibilityLabel="Connected Accounts" accessibilityHint={openAccounts ? 'Collapse section' : 'Expand section'} accessibilityState={{ expanded: openAccounts }}>
               <Text style={s.sectionTitle}>Connected Accounts</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Pressable onPress={() => router.push('/connect-bank')}>
+                <Pressable onPress={() => router.push('/connect-bank')} accessibilityRole="button" accessibilityLabel={connectedBanks.length > 0 ? 'Manage connected banks' : 'Connect a bank'}>
                   <Text style={s.viewAll}>{connectedBanks.length > 0 ? 'Manage' : 'Connect'}</Text>
                 </Pressable>
-                <Ionicons name={openAccounts ? 'chevron-up' : 'chevron-down'} size={16} color={C.textMuted} />
+                <Ionicons name={openAccounts ? 'chevron-up' : 'chevron-down'} size={16} color={C.textMuted} accessibilityElementsHidden />
               </View>
             </Pressable>
             {openAccounts && (connectedBanks.length === 0 ? (
-              <Pressable ref={connectBankRef} style={s.connectBankBtn} onPress={() => router.push('/connect-bank')}>
+              <Pressable ref={connectBankRef} style={s.connectBankBtn} onPress={() => router.push('/connect-bank')} accessibilityRole="button" accessibilityLabel="Connect your bank. Link an account to sync transactions automatically">
                 <View style={s.connectBankIcon}>
-                  <Ionicons name="link-outline" size={20} color={C.brandLight} />
+                  <Ionicons name="link-outline" size={20} color={C.brandLight} accessibilityElementsHidden />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={s.connectBankTitle}>Connect your bank</Text>
                   <Text style={s.connectBankSub}>Link an account to sync transactions automatically</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={16} color={C.textMuted} />
+                <Ionicons name="chevron-forward" size={16} color={C.textMuted} accessibilityElementsHidden />
               </Pressable>
             ) : (
               connectedBanks.map((b) => (
@@ -342,15 +350,15 @@ export default function Index() {
 
           {/* Recent Transactions */}
           <View style={s.section}>
-            <Pressable style={s.sectionHeader} onPress={() => setOpenTransactions((v) => !v)}>
+            <Pressable style={s.sectionHeader} onPress={() => setOpenTransactions((v) => !v)} accessibilityRole="button" accessibilityLabel="Recent Transactions" accessibilityHint={openTransactions ? 'Collapse section' : 'Expand section'} accessibilityState={{ expanded: openTransactions }}>
               <Text style={s.sectionTitle}>Recent Transactions</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 {transactions.length > 5 && (
-                  <Pressable onPress={() => router.push('/insights')}>
+                  <Pressable onPress={() => router.push('/insights')} accessibilityRole="button" accessibilityLabel="View all transactions">
                     <Text style={s.viewAll}>View all</Text>
                   </Pressable>
                 )}
-                <Ionicons name={openTransactions ? 'chevron-up' : 'chevron-down'} size={16} color={C.textMuted} />
+                <Ionicons name={openTransactions ? 'chevron-up' : 'chevron-down'} size={16} color={C.textMuted} accessibilityElementsHidden />
               </View>
             </Pressable>
 
@@ -359,44 +367,68 @@ export default function Index() {
                 <Ionicons name="receipt-outline" size={44} color={C.textMuted} />
                 <Text style={s.emptyTitle}>No transactions yet</Text>
                 <Text style={s.emptySub}>Add one manually or import from your bank</Text>
-                <Pressable style={s.emptyBtn} onPress={() => router.push('/add-transaction')}>
+                <Pressable style={s.emptyBtn} onPress={() => router.push('/add-transaction')} accessibilityRole="button" accessibilityLabel="Add Transaction">
                   <Text style={s.emptyBtnText}>Add Transaction</Text>
                 </Pressable>
               </View>
             ) : (
-              recent.map((t) => (
-                <Pressable key={t.id} style={s.txRow} onPress={() => openEdit(t)}>
-                  <View style={[s.txIcon, { backgroundColor: catColor(t.category) + '22' }]}>
-                    <Text style={[s.txIconLetter, { color: catColor(t.category) }]}>
-                      {t.category.charAt(0).toUpperCase()}
+              <>
+                {recent.map((t) => (
+                  <Pressable
+                    key={t.id}
+                    style={s.txRow}
+                    onPress={() => router.push({ pathname: '/transaction-detail', params: { id: t.id } })}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${t.description || t.category}, ${t.category}, ${new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}, ${t.type === 'income' ? 'income' : 'expense'} £${t.amount.toFixed(2)}${t.items && t.items.length > 0 ? `, items: ${t.items.map((i) => i.name).join(', ')}` : ''}`}
+                    accessibilityHint="Double tap to view transaction details"
+                  >
+                    <View style={[s.txIcon, { backgroundColor: catColor(t.category) + '22' }]} accessibilityElementsHidden>
+                      <Text style={[s.txIconLetter, { color: catColor(t.category) }]}>
+                        {t.category.charAt(0).toUpperCase()}
+                      </Text>
+                    </View>
+                    <View style={s.txInfo} importantForAccessibility="no">
+                      <Text style={s.txCategory} numberOfLines={1}>{t.description || t.category}</Text>
+                      <Text style={s.txMeta}>{t.category} · {new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</Text>
+                      {t.items && t.items.length > 0 && (
+                        <Text style={s.txItems} numberOfLines={1}>
+                          {t.items.map((i) => i.name).join(' · ')}
+                        </Text>
+                      )}
+                    </View>
+                    <Text style={[s.txAmount, { color: t.type === 'income' ? C.income : C.expense }]} importantForAccessibility="no">
+                      {t.type === 'income' ? '+' : '−'}£{t.amount.toFixed(2)}
                     </Text>
-                  </View>
-                  <View style={s.txInfo}>
-                    <Text style={s.txCategory} numberOfLines={1}>{t.description || t.category}</Text>
-                    <Text style={s.txMeta}>{t.category} · {new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</Text>
-                  </View>
-                  <Text style={[s.txAmount, { color: t.type === 'income' ? C.income : C.expense }]}>
-                    {t.type === 'income' ? '+' : '−'}£{t.amount.toFixed(2)}
-                  </Text>
-                </Pressable>
-              ))
+                  </Pressable>
+                ))}
+                <View style={s.exportRow}>
+                  <Pressable style={s.exportBtn} onPress={() => exportTransactionsCsv(transactions)} accessibilityRole="button" accessibilityLabel="Export transaction history as CSV">
+                    <Ionicons name="document-text-outline" size={14} color={C.brandLight} accessibilityElementsHidden />
+                    <Text style={s.exportBtnText}>CSV</Text>
+                  </Pressable>
+                  <Pressable style={s.exportBtn} onPress={() => exportTransactionsPdf(transactions)} accessibilityRole="button" accessibilityLabel="Export transaction history as PDF">
+                    <Ionicons name="print-outline" size={14} color={C.brandLight} accessibilityElementsHidden />
+                    <Text style={s.exportBtnText}>PDF</Text>
+                  </Pressable>
+                </View>
+              </>
             ))}
           </View>
 
           {/* Adviser Recommendations Card */}
           <View style={s.insightCard}>
-            <Pressable style={s.insightHeader} onPress={() => setOpenAdviser((v) => !v)}>
-              <Ionicons name="trending-up" size={18} color={C.brandLight} />
+            <Pressable style={s.insightHeader} onPress={() => setOpenAdviser((v) => !v)} accessibilityRole="button" accessibilityLabel="Adviser's Recommendations" accessibilityHint={openAdviser ? 'Collapse section' : 'Expand section'} accessibilityState={{ expanded: openAdviser }}>
+              <Ionicons name="trending-up" size={18} color={C.brandLight} accessibilityElementsHidden />
               <Text style={s.insightTitle}>Adviser's Recommendations</Text>
-              <Ionicons name={openAdviser ? 'chevron-up' : 'chevron-down'} size={16} color={C.textMuted} style={{ marginLeft: 'auto' }} />
+              <Ionicons name={openAdviser ? 'chevron-up' : 'chevron-down'} size={16} color={C.textMuted} style={{ marginLeft: 'auto' }} accessibilityElementsHidden />
             </Pressable>
             {openAdviser && (
               <>
                 <Text style={s.insightText}>
                   Your portfolio is visible to your assigned DWK adviser. They will reach out with personalised wealth management and portfolio analysis.
                 </Text>
-                <Pressable style={s.adviserBtn} onPress={() => router.push('/(tabs)/invest?tab=adviser' as any)}>
-                  <Ionicons name="people-outline" size={16} color="#fff" />
+                <Pressable style={s.adviserBtn} onPress={() => router.push('/(tabs)/invest?tab=adviser' as any)} accessibilityRole="button" accessibilityLabel="Consult Adviser">
+                  <Ionicons name="people-outline" size={16} color="#fff" accessibilityElementsHidden />
                   <Text style={s.adviserBtnText}>Consult Adviser</Text>
                 </Pressable>
               </>
@@ -600,6 +632,7 @@ const s = StyleSheet.create({
   txInfo: { flex: 1 },
   txCategory: { fontSize: 14, fontWeight: '600', color: C.textPrimary },
   txMeta: { fontSize: 12, color: C.textMuted, marginTop: 2 },
+  txItems: { fontSize: 11, color: C.brandLight, marginTop: 3, opacity: 0.8 },
   txAmount: { fontSize: 15, fontWeight: '700' },
 
   empty: { padding: 40, alignItems: 'center', gap: 8 },
@@ -679,4 +712,8 @@ const s = StyleSheet.create({
   deleteCancelText: { fontSize: 14, fontWeight: '600', color: C.textSecondary },
   deleteConfirmBtn: { flex: 1, paddingVertical: 11, borderRadius: 10, backgroundColor: C.destructive, alignItems: 'center' },
   deleteConfirmBtnText: { fontSize: 14, fontWeight: '700', color: '#fff' },
+
+  exportRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1, borderTopColor: C.borderLight },
+  exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10, borderWidth: 1, borderColor: C.brandBorder, backgroundColor: C.brandBg },
+  exportBtnText: { fontSize: 12, fontWeight: '600', color: C.brandLight },
 });

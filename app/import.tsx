@@ -172,7 +172,7 @@ export default function Import() {
       const memoryUpdates: Record<string, string> = {};
       const transactions: Transaction[] = parsed.map((row) => {
         const category = getCategory(row.id);
-        memoryUpdates[normalizeKey(row.description)] = category;
+        if (category !== 'Other') memoryUpdates[normalizeKey(row.description)] = category;
         return { id: row.id, date: row.date, amount: row.amount, category, description: row.description, type: row.type, source: 'monzo' as const, importId };
       });
       const added = await appendTransactions(transactions);

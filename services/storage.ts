@@ -1,5 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export interface TransactionItem {
+  id: string;
+  name: string;
+  price?: number;
+}
+
 export interface Transaction {
   id: string;
   date: string;
@@ -9,6 +15,7 @@ export interface Transaction {
   type: 'income' | 'expense';
   source: 'manual' | 'monzo';
   importId?: string;
+  items?: TransactionItem[];
 }
 
 export interface ImportBatch {
@@ -87,6 +94,11 @@ export async function updateTransactionCategory(id: string, category: string): P
 export async function updateTransactionName(id: string, description: string): Promise<void> {
   const transactions = await loadTransactions();
   await saveTransactions(transactions.map((t) => (t.id === id ? { ...t, description } : t)));
+}
+
+export async function updateTransactionItems(id: string, items: TransactionItem[]): Promise<void> {
+  const transactions = await loadTransactions();
+  await saveTransactions(transactions.map((t) => (t.id === id ? { ...t, items } : t)));
 }
 
 export async function deleteTransaction(id: string): Promise<void> {

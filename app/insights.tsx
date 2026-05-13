@@ -15,6 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { loadTransactions, renameCategory, loadCustomCategoryColors, Transaction } from '@/services/storage';
 import { generateInsights } from '@/services/categorizer';
 import { C, getCategoryColor } from '@/constants/theme';
+import { exportInsightsCsv, exportInsightsPdf } from '@/services/export';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -258,7 +259,7 @@ export default function Insights() {
             ['day', 'Day'],
             ['month', 'Month'],
           ] as [Mode, string][]).map(([m, label]) => (
-            <Pressable key={m} style={[s.toggleBtn, mode === m && s.toggleActive]} onPress={() => setMode(m)}>
+            <Pressable key={m} style={[s.toggleBtn, mode === m && s.toggleActive]} onPress={() => setMode(m)} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected: mode === m }}>
               <Text style={[s.toggleText, mode === m && s.toggleTextActive]}>{label}</Text>
             </Pressable>
           ))}
@@ -347,12 +348,12 @@ export default function Insights() {
 
                     return (
                       <View key={d.label}>
-                        <Pressable style={s.legendRow} onPress={() => { setExpandedCategory(isExpanded ? null : d.label); if (isRenaming) setRenamingCategory(null); }} activeOpacity={0.7}>
-                          <View style={[s.dot, { backgroundColor: d.color }]} />
-                          <Text style={s.legendLabel}>{d.label}</Text>
-                          <Text style={s.legendAmt}>£{d.value.toFixed(2)}</Text>
-                          <Text style={s.legendPct}>{totalFiltered > 0 ? ((d.value / totalFiltered) * 100).toFixed(0) : 0}%</Text>
-                          <Ionicons name={isExpanded ? 'chevron-up' : 'chevron-down'} size={14} color={C.textMuted} />
+                        <Pressable style={s.legendRow} onPress={() => { setExpandedCategory(isExpanded ? null : d.label); if (isRenaming) setRenamingCategory(null); }} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={`${d.label}, £${d.value.toFixed(2)}, ${totalFiltered > 0 ? ((d.value / totalFiltered) * 100).toFixed(0) : 0} percent of total`} accessibilityHint={isExpanded ? 'Collapse transactions' : 'Expand transactions'} accessibilityState={{ expanded: isExpanded }}>
+                          <View style={[s.dot, { backgroundColor: d.color }]} accessibilityElementsHidden />
+                          <Text style={s.legendLabel} importantForAccessibility="no">{d.label}</Text>
+                          <Text style={s.legendAmt} importantForAccessibility="no">£{d.value.toFixed(2)}</Text>
+                          <Text style={s.legendPct} importantForAccessibility="no">{totalFiltered > 0 ? ((d.value / totalFiltered) * 100).toFixed(0) : 0}%</Text>
+                          <Ionicons name={isExpanded ? 'chevron-up' : 'chevron-down'} size={14} color={C.textMuted} accessibilityElementsHidden />
                         </Pressable>
 
                         {isExpanded && (
@@ -447,12 +448,23 @@ export default function Insights() {
                   <Text style={s.errorText}> {insightsError}</Text>
                 </View>
               ) : null}
-              <Pressable style={[s.insightsBtn, loadingInsights && { opacity: 0.6 }]} onPress={handleGenerateInsights} disabled={loadingInsights}>
+              <Pressable style={[s.insightsBtn, loadingInsights && { opacity: 0.6 }]} onPress={handleGenerateInsights} disabled={loadingInsights} accessibilityRole="button" accessibilityLabel={loadingInsights ? 'Generating insights, please wait' : insights ? 'Regenerate AI Insights' : 'Generate AI Insights'} accessibilityState={{ busy: loadingInsights }}>
                 {loadingInsights
                   ? <ActivityIndicator color="#fff" size="small" />
-                  : <><Ionicons name="sparkles-outline" size={16} color="#fff" /><Text style={s.insightsBtnText}> {insights ? 'Regenerate' : 'Generate AI Insights'}</Text></>
+                  : <><Ionicons name="sparkles-outline" size={16} color="#fff" accessibilityElementsHidden /><Text style={s.insightsBtnText}> {insights ? 'Regenerate' : 'Generate AI Insights'}</Text></>
                 }
               </Pressable>
+              <View style={s.exportRow}>
+                <Text style={s.exportLabel}>Export report</Text>
+                <Pressable style={s.exportBtn} onPress={() => exportInsightsCsv(byCategory, filteredExpenses, filterLabel)} accessibilityRole="button" accessibilityLabel="Export spending report as CSV">
+                  <Ionicons name="document-text-outline" size={14} color={C.brandLight} accessibilityElementsHidden />
+                  <Text style={s.exportBtnText}>CSV</Text>
+                </Pressable>
+                <Pressable style={s.exportBtn} onPress={() => exportInsightsPdf(byCategory, monthlyData, filteredExpenses, filterLabel, insights)} accessibilityRole="button" accessibilityLabel="Export spending report as PDF">
+                  <Ionicons name="print-outline" size={14} color={C.brandLight} accessibilityElementsHidden />
+                  <Text style={s.exportBtnText}>PDF</Text>
+                </Pressable>
+              </View>
             </View>
           </>
         )}
@@ -516,6 +528,11 @@ const s = StyleSheet.create({
   errorText: { fontSize: 14, color: C.expense },
   insightsBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: C.brand, padding: 14, borderRadius: 12 },
   insightsBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+
+  exportRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
+  exportLabel: { flex: 1, fontSize: 12, color: C.textMuted, fontWeight: '500' },
+  exportBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10, borderWidth: 1, borderColor: C.brandBorder, backgroundColor: C.brandBg },
+  exportBtnText: { fontSize: 12, fontWeight: '600', color: C.brandLight },
 
   empty: { alignItems: 'center', paddingVertical: 60, gap: 10 },
   emptyTitle: { fontSize: 20, fontWeight: '600', color: C.textSecondary },

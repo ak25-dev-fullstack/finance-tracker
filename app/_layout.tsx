@@ -16,13 +16,14 @@ function RootLayoutNav() {
     const inRegister = seg0 === 'register';
     const inProfile = seg0 === 'profile';
     const inSearch = seg0 === 'search';
+    const inTransactionDetail = seg0 === 'transaction-detail';
 
     if (!user && !inLogin && !inRegister) {
       router.replace('/login');
-    } else if (user && (inLogin || inRegister || (!inTabs && !inProfile && !inSearch))) {
+    } else if (user && (inLogin || inRegister || (!inTabs && !inProfile && !inSearch && !inTransactionDetail))) {
       router.replace('/(tabs)');
     }
-  }, [user, loading]);
+  }, [user, loading, segments]);
 
   return (
     <>
@@ -84,6 +85,18 @@ function RootLayoutNav() {
             presentation: 'fullScreenModal',
             headerShown: false,
             animation: 'fade',
+          }}
+        />
+        <Stack.Screen
+          name="transaction-detail"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            headerTitle: 'Transaction',
+            headerStyle: { backgroundColor: '#1E293B' },
+            headerTintColor: '#00b4d8',
+            headerShadowVisible: false,
+            headerTitleStyle: { color: '#F8FAFC' },
           }}
         />
       </Stack>

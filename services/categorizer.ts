@@ -121,7 +121,7 @@ export async function categorize(
 
   for (const t of transactions) {
     const key = normalizeKey(t.description);
-    if (memory[key]) {
+    if (memory[key] && memory[key] !== 'Other') {
       results.push({ id: t.id, category: memory[key], confidence: 'high', fromMemory: true });
     } else {
       needsAI.push(t);
