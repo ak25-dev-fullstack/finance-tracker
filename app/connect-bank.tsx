@@ -70,25 +70,30 @@ function buildMockTransactions(bankId: BankId): ParsedRow[] {
     { desc: 'Tesco Superstore',      amount: 62.45,   type: 'expense' as const, daysAgo: 1  },
     { desc: 'TfL Travel',            amount: 4.80,    type: 'expense' as const, daysAgo: 2  },
     { desc: 'Salary - DWK Ltd',      amount: 3500.00, type: 'income'  as const, daysAgo: 3  },
+    { desc: 'J HENDERSON',           amount: 50.00,   type: 'expense' as const, daysAgo: 4  },
     { desc: 'Netflix',               amount: 17.99,   type: 'expense' as const, daysAgo: 5  },
     { desc: "Sainsbury's",           amount: 38.20,   type: 'expense' as const, daysAgo: 6  },
+    { desc: 'SUM UP * GRN MRKT',     amount: 9.80,    type: 'expense' as const, daysAgo: 7  },
     { desc: 'Deliveroo',             amount: 24.50,   type: 'expense' as const, daysAgo: 8  },
+    { desc: 'CARD PYMT 774821-C',    amount: 45.00,   type: 'expense' as const, daysAgo: 9  },
     { desc: 'British Gas',           amount: 85.00,   type: 'expense' as const, daysAgo: 10 },
+    { desc: 'REF 2094 S PATEL',      amount: 30.00,   type: 'expense' as const, daysAgo: 11 },
     { desc: 'Amazon Prime',          amount: 8.99,    type: 'expense' as const, daysAgo: 12 },
     { desc: 'Costa Coffee',          amount: 5.20,    type: 'expense' as const, daysAgo: 13 },
     { desc: 'Transfer from savings', amount: 500.00,  type: 'income'  as const, daysAgo: 14 },
+    { desc: 'FASTER PAYMENT 882931', amount: 120.00,  type: 'expense' as const, daysAgo: 15 },
     { desc: 'Boots',                 amount: 18.75,   type: 'expense' as const, daysAgo: 16 },
+    { desc: 'GOOGLE *SVCS',          amount: 2.99,    type: 'expense' as const, daysAgo: 17 },
     { desc: 'Uber',                  amount: 12.30,   type: 'expense' as const, daysAgo: 18 },
+    { desc: 'D MORRISON',            amount: 80.00,   type: 'expense' as const, daysAgo: 19 },
     { desc: 'Spotify',               amount: 11.99,   type: 'expense' as const, daysAgo: 20 },
+    { desc: 'PMT REF 00492-B',       amount: 34.99,   type: 'expense' as const, daysAgo: 21 },
     { desc: 'M&S Food',              amount: 44.60,   type: 'expense' as const, daysAgo: 22 },
+    { desc: 'BACS CREDIT AX8812',    amount: 150.00,  type: 'income'  as const, daysAgo: 23 },
     { desc: 'EE Mobile',             amount: 35.00,   type: 'expense' as const, daysAgo: 25 },
     { desc: 'HMRC Tax Refund',       amount: 240.00,  type: 'income'  as const, daysAgo: 27 },
     { desc: 'Waterstones',           amount: 22.00,   type: 'expense' as const, daysAgo: 28 },
     { desc: 'Vue Cinema',            amount: 14.00,   type: 'expense' as const, daysAgo: 30 },
-    { desc: 'J HENDERSON',           amount: 50.00,   type: 'expense' as const, daysAgo: 4  },
-    { desc: 'SUM UP * GRN MRKT',     amount: 9.80,    type: 'expense' as const, daysAgo: 7  },
-    { desc: 'FASTER PAYMENT 882931', amount: 120.00,  type: 'expense' as const, daysAgo: 15 },
-    { desc: 'PMT REF 00492-B',       amount: 34.99,   type: 'expense' as const, daysAgo: 21 },
   ];
   return raw.map((r, i) => {
     const d = new Date(now);
@@ -314,7 +319,7 @@ export default function ConnectBank() {
                       {bankDef && (() => {
                         const ss = syncState[b.id];
                         return (
-                          <Pressable onPress={() => handleQuickSync(bankDef)} disabled={!!ss}>
+                          <Pressable onPress={() => handleSync(bankDef)} disabled={ss === 'syncing'}>
                             {ss === 'syncing'
                               ? <ActivityIndicator size="small" color={b.color} />
                               : <Text style={[s.disconnectText, { color: ss === 'synced' ? C.income : b.color }]}>
@@ -454,8 +459,8 @@ export default function ConnectBank() {
             return (
               <Pressable
                 style={[s.primaryBtn, ss === 'synced' && { backgroundColor: C.income }, ss === 'syncing' && { opacity: 0.7 }]}
-                onPress={() => selectedBank && handleQuickSync(selectedBank)}
-                disabled={!!ss}
+                onPress={() => selectedBank && handleSync(selectedBank)}
+                disabled={ss === 'syncing'}
               >
                 {ss === 'syncing'
                   ? <ActivityIndicator color="#fff" size="small" />

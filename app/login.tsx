@@ -113,8 +113,7 @@ export default function Login() {
   const completeMfa = async () => {
     setMfaLoading(true);
     await login(username, password);
-    // _layout.tsx detects user !== null and redirects to /(tabs) automatically
-    setMfaLoading(false);
+    router.replace('/(tabs)');
   };
 
   const handleFaceId = () => {

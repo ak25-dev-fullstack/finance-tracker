@@ -247,9 +247,10 @@ export function useOnboardingTarget(stepKey: string) {
     if (!showOnboarding || activeStepKey !== stepKey || !targetRef.current) return;
     let active = true;
     const measureTarget = () => {
+      const screenHeight = Dimensions.get('window').height;
       targetRef.current?.measureInWindow((x, y, width, height) => {
         if (!active) return;
-        if (width > 0 && height > 0) {
+        if (width > 0 && height > 0 && y >= 0 && y + height <= screenHeight) {
           fixHighlight({ x, y, width, height });
         }
       });
