@@ -17,10 +17,14 @@ function RootLayoutNav() {
     const inProfile = seg0 === 'profile';
     const inSearch = seg0 === 'search';
     const inTransactionDetail = seg0 === 'transaction-detail';
+    const inConnectBank = seg0 === 'connect-bank';
+    const inAddTransaction = seg0 === 'add-transaction';
+    const inImport = seg0 === 'import';
+    const inInsights = seg0 === 'insights';
 
     if (!user && !inLogin && !inRegister) {
       router.replace('/login');
-    } else if (user && (inLogin || inRegister || (!inTabs && !inProfile && !inSearch && !inTransactionDetail))) {
+    } else if (user && (inLogin || inRegister || (!inTabs && !inProfile && !inSearch && !inTransactionDetail && !inConnectBank && !inAddTransaction && !inImport && !inInsights))) {
       router.replace('/(tabs)');
     }
   }, [user, loading, segments]);
