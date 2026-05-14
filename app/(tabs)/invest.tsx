@@ -249,6 +249,7 @@ export default function InvestScreen() {
   const [tab, setTab] = useState<Tab>('portfolio');
   const portfolioTabRef = useOnboardingTarget('invest_portfolio');
   const uploadTabRef = useOnboardingTarget('invest_upload');
+  const goalsTabRef = useOnboardingTarget('invest_goals');
 
   useEffect(() => {
     if (tabParam && (['portfolio', 'goals', 'upload'] as Tab[]).includes(tabParam)) {
@@ -277,7 +278,7 @@ export default function InvestScreen() {
         {TABS.map((t) => (
           <View
             key={t.key}
-            ref={t.key === 'portfolio' ? portfolioTabRef : t.key === 'upload' ? uploadTabRef : undefined}
+            ref={t.key === 'portfolio' ? portfolioTabRef : t.key === 'upload' ? uploadTabRef : t.key === 'goals' ? goalsTabRef : undefined}
             collapsable={false}
           >
             <Pressable style={[s.tabPill, tab === t.key && s.tabPillActive]} onPress={() => setTab(t.key)}>

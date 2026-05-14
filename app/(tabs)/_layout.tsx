@@ -18,9 +18,26 @@ const ONBOARDING_STEPS = [
   {
     key: 'home_actions',
     route: '/(tabs)',
-    title: 'Quick actions',
-    description: 'Use Home quick actions to add transactions, import data, and ask the AI assistant.',
-    defaultHighlight: { x: 16, y: 220, width: screenWidth - 32, height: 120 },
+    title: 'Add a transaction',
+    description: 'Tap Add to manually record a transaction — income or expense.',
+  },
+  {
+    key: 'home_import',
+    route: '/(tabs)',
+    title: 'Import transactions',
+    description: 'Tap Import to upload a Monzo CSV bank statement. Transactions are automatically categorised using AI.',
+  },
+  {
+    key: 'home_ai',
+    route: '/(tabs)',
+    title: 'Spending analysis',
+    description: 'Tap Insights to view spending charts and generate AI-powered analysis of your transactions.',
+  },
+  {
+    key: 'home_ai_chat',
+    route: '/(tabs)',
+    title: 'AI Chat',
+    description: 'Use AI Chat to rename or recategorise your transactions — just describe what you want and the assistant will update them for you.',
   },
   {
     key: 'home_connect',
@@ -44,13 +61,6 @@ const ONBOARDING_STEPS = [
     defaultHighlight: { x: 16, y: 16, width: 84, height: 44 },
   },
   {
-    key: 'save_adviser',
-    route: '/(tabs)/save',
-    title: 'Consult an adviser',
-    description: 'Use the adviser card to get personalised savings advice.',
-    defaultHighlight: { x: 16, y: 520, width: screenWidth - 32, height: 120 },
-  },
-  {
     key: 'invest_tab',
     route: '/(tabs)/invest',
     title: 'Invest tab',
@@ -59,16 +69,22 @@ const ONBOARDING_STEPS = [
   },
   {
     key: 'invest_portfolio',
-    route: '/(tabs)/invest',
+    route: '/(tabs)/invest?tab=portfolio',
     title: 'Portfolio overview',
     description: 'Check your portfolio value, performance, and chart in the Invest tab.',
     defaultHighlight: { x: 16, y: 160, width: screenWidth - 32, height: 240 },
   },
   {
+    key: 'invest_goals',
+    route: '/(tabs)/invest?tab=goals',
+    title: 'Financial goals',
+    description: 'Set financial targets, track progress, and see if you\'re on track to reach them.',
+  },
+  {
     key: 'invest_upload',
-    route: '/(tabs)/invest',
+    route: '/(tabs)/invest?tab=upload',
     title: 'Upload or add holdings',
-    description: 'Switch to Upload to add holdings or import statements for your portfolio.',
+    description: 'Add holdings or import statements for your portfolio.',
     defaultHighlight: { x: 16, y: 560, width: screenWidth - 32, height: 100 },
   },
   {

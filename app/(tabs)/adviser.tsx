@@ -54,8 +54,8 @@ const CONSULTATION_TYPES = ['Portfolio Review', 'Tax Planning', 'Retirement Plan
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export default function AdviserScreen() {
-  const [teamOpen, setTeamOpen] = useState(true);
-  const [recsOpen, setRecsOpen] = useState(true);
+  const [teamOpen, setTeamOpen] = useState(false);
+  const [recsOpen, setRecsOpen] = useState(false);
 
   const [messageOpen, setMessageOpen] = useState(false);
   const [message, setMessage] = useState('');
@@ -67,7 +67,6 @@ export default function AdviserScreen() {
   const [preferredTime, setPreferredTime] = useState('');
   const [consultationSent, setConsultationSent] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [portfolioOpen, setPortfolioOpen] = useState(false);
   const adviserTeamRef = useOnboardingTarget('adviser_team');
   const adviserMessageRef = useOnboardingTarget('adviser_message');
 
@@ -144,23 +143,13 @@ export default function AdviserScreen() {
           </View>
         ))}
 
-        {/* Portfolio access (accordion button) */}
-        <Pressable style={s.accordionHeader} onPress={() => setPortfolioOpen((o) => !o)}>
-          <View style={s.accordionIconWrap}>
-            <Ionicons name="briefcase-outline" size={18} color={C.brandLight} />
-          </View>
-          <Text style={s.accordionTitle}>Portfolio access</Text>
-          <Ionicons name={portfolioOpen ? 'chevron-up' : 'chevron-down'} size={18} color={C.textMuted} />
-        </Pressable>
-
-        {portfolioOpen && (
-          <View style={s.card}>
-            <Text style={s.shareDesc}>Grant your adviser read-only access to your portfolio so they can provide fully informed, personalised recommendations without requiring you to share statements manually.</Text>
-            <Pressable style={s.saveBtn}>
-              <Text style={s.saveBtnText}>Share portfolio access</Text>
-            </Pressable>
-          </View>
-        )}
+        {/* Consent notice */}
+        <View style={s.consentBanner}>
+          <Ionicons name="information-circle-outline" size={20} color={C.brandLight} />
+          <Text style={s.consentText}>
+            If your adviser needs access to information you haven't shared yet, go to <Text style={s.consentLink}>Profile → Data &amp; Privacy</Text> to update your consent settings.
+          </Text>
+        </View>
 
         {/* Send a quick message */}
         <View ref={adviserMessageRef} collapsable={false}>
@@ -333,6 +322,10 @@ const s = StyleSheet.create({
   commentAuthor: { fontSize: 13, fontWeight: '600', color: C.textPrimary },
   commentMeta: { fontSize: 11, color: C.textMuted, marginTop: 1 },
   commentText: { fontSize: 13, color: C.textSecondary, lineHeight: 20 },
+
+  consentBanner: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginHorizontal: 20, marginTop: 16, backgroundColor: C.brandBg, borderRadius: 14, borderWidth: 1, borderColor: C.brandBorder, padding: 14 },
+  consentText: { flex: 1, fontSize: 13, color: C.textSecondary, lineHeight: 20 },
+  consentLink: { color: C.brandLight, fontWeight: '600' },
 
   shareDesc: { fontSize: 13, color: C.textSecondary, lineHeight: 20, marginBottom: 16 },
   cardHint: { fontSize: 13, color: C.textMuted, lineHeight: 20, marginBottom: 14 },

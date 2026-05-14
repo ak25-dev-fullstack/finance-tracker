@@ -1,34 +1,8 @@
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import { AuthProvider, useAuth } from '@/context/auth';
+import { AuthProvider } from '@/context/auth';
 
 function RootLayoutNav() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-  const segments = useSegments();
-
-  useEffect(() => {
-    if (loading) return;
-    const seg0 = segments[0] as string;
-    const inTabs = seg0 === '(tabs)';
-    const inLogin = seg0 === 'login';
-    const inRegister = seg0 === 'register';
-    const inProfile = seg0 === 'profile';
-    const inSearch = seg0 === 'search';
-    const inTransactionDetail = seg0 === 'transaction-detail';
-    const inConnectBank = seg0 === 'connect-bank';
-    const inAddTransaction = seg0 === 'add-transaction';
-    const inImport = seg0 === 'import';
-    const inInsights = seg0 === 'insights';
-
-    if (!user && !inLogin && !inRegister) {
-      router.replace('/login');
-    } else if (user && (inLogin || inRegister || (!inTabs && !inProfile && !inSearch && !inTransactionDetail && !inConnectBank && !inAddTransaction && !inImport && !inInsights))) {
-      router.replace('/(tabs)');
-    }
-  }, [user, loading, segments]);
-
   return (
     <>
       <StatusBar style="light" />
@@ -38,6 +12,7 @@ function RootLayoutNav() {
           contentStyle: { backgroundColor: '#0F172A' },
         }}
       >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="login" />
         <Stack.Screen name="register" />
         <Stack.Screen name="(tabs)" />

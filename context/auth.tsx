@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ONBOARDING_KEY } from '@/services/storage';
 
 export interface User {
   name: string;
@@ -36,30 +37,38 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const AUTH_KEY = 'auth_user';
+const SESSION_KEY = 'auth_session_v1';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    AsyncStorage.getItem(AUTH_KEY).then((data) => {
-      if (data) setUser(JSON.parse(data));
+    AsyncStorage.getItem(SESSION_KEY).then(raw => {
+      if (raw) {
+        try {
+          const { savedUser } = JSON.parse(raw);
+          setUser(savedUser);
+        } catch {
+          AsyncStorage.removeItem(SESSION_KEY);
+        }
+      }
       setLoading(false);
     });
   }, []);
 
+  const logout = () => {
+    setUser(null);
+    AsyncStorage.removeItem(SESSION_KEY);
+  };
+
   const login = async (username: string, password: string): Promise<LoginResult> => {
     if (username.toLowerCase().trim() !== MOCK_USER.username) return 'unknown_user';
     if (password !== MOCK_USER.password) return 'wrong_password';
-    await AsyncStorage.setItem(AUTH_KEY, JSON.stringify(MOCK_USER.user));
+    await AsyncStorage.removeItem(ONBOARDING_KEY);
     setUser(MOCK_USER.user);
+    await AsyncStorage.setItem(SESSION_KEY, JSON.stringify({ savedUser: MOCK_USER.user }));
     return 'ok';
-  };
-
-  const logout = () => {
-    setUser(null);
-    AsyncStorage.removeItem(AUTH_KEY).catch(() => {});
   };
 
   return (

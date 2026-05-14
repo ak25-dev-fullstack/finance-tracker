@@ -59,6 +59,9 @@ export default function Index() {
   const [openAdviser, setOpenAdviser] = useState(true);
 
   const addActionRef = useOnboardingTarget('home_actions');
+  const importRef = useOnboardingTarget('home_import');
+  const aiInsightsRef = useOnboardingTarget('home_ai');
+  const aiChatRef = useOnboardingTarget('home_ai_chat');
   const connectBankRef = useOnboardingTarget('home_connect');
 
   const catColor = (cat: string) => getCategoryColor(cat, customColors);
@@ -293,9 +296,9 @@ export default function Index() {
           <View style={s.actionsRow}>
             {[
               { icon: 'add-circle-outline', label: 'Add', action: () => router.push('/add-transaction'), ref: addActionRef },
-              { icon: 'cloud-upload-outline', label: 'Import', action: () => router.push('/import') },
-              { icon: 'bar-chart-outline', label: 'Insights', action: () => router.push('/insights') },
-              { icon: 'chatbubble-ellipses-outline', label: 'AI Chat', action: () => setShowAgent(true) },
+              { icon: 'cloud-upload-outline', label: 'Import', action: () => router.push('/import'), ref: importRef },
+              { icon: 'bar-chart-outline', label: 'Insights', action: () => router.push('/insights'), ref: aiInsightsRef },
+              { icon: 'chatbubble-ellipses-outline', label: 'AI Chat', action: () => setShowAgent(true), ref: aiChatRef },
             ].map((item) => (
               <View key={item.label} ref={(item as any).ref} collapsable={false}>
                 <Pressable style={s.actionBtn} onPress={item.action} accessibilityRole="button" accessibilityLabel={item.label}>
