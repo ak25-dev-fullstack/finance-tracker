@@ -23,32 +23,32 @@ const PERIODS: Period[] = ['1D', '1W', '1M', '3M', 'YTD', '1Y', 'MAX'];
 type PeriodMeta = { data: number[]; change: string; positive: boolean; label: string; labels: string[] };
 
 const LABELS: Record<Period, string[]> = {
-  '1D':  ['09:30', '10:30', '11:30', '12:30', '13:30', '14:30', '15:30'],
-  '1W':  ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-  '1M':  ['Apr 1', 'Apr 4', 'Apr 7', 'Apr 10', 'Apr 13', 'Apr 16', 'Apr 19', 'Apr 22', 'Apr 25', 'Apr 28', 'May 1', 'May 4'],
-  '3M':  ['Jan 1', 'Jan 15', 'Feb 1', 'Feb 15', 'Mar 1', 'Mar 15', 'Apr 1', 'Apr 15', 'May 1', 'May 15', 'Jun 1', 'Jun 15'],
+  '1D': ['09:30', '10:30', '11:30', '12:30', '13:30', '14:30', '15:30'],
+  '1W': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  '1M': ['Apr 1', 'Apr 4', 'Apr 7', 'Apr 10', 'Apr 13', 'Apr 16', 'Apr 19', 'Apr 22', 'Apr 25', 'Apr 28', 'May 1', 'May 4'],
+  '3M': ['Jan 1', 'Jan 15', 'Feb 1', 'Feb 15', 'Mar 1', 'Mar 15', 'Apr 1', 'Apr 15', 'May 1', 'May 15', 'Jun 1', 'Jun 15'],
   'YTD': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-  '1Y':  ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  '1Y': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   'MAX': ['2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023'],
 };
 
 const PORTFOLIO_PERIODS: Record<Period, PeriodMeta> = {
-  '1D':  { data: [21200, 21150, 21280, 21220, 21310, 21270, 21390], change: '+0.2%', positive: true,  label: 'today', labels: LABELS['1D'] },
-  '1W':  { data: [20900, 21100, 20950, 21200, 21350, 21280, 21390], change: '+2.3%', positive: true,  label: 'this week', labels: LABELS['1W'] },
-  '1M':  { data: [20500, 20600, 20400, 20750, 20900, 21100, 20800, 21200, 21000, 21300, 21150, 21390], change: '+4.3%', positive: true,  label: 'this month', labels: LABELS['1M'] },
-  '3M':  { data: [19500, 20100, 20400, 20200, 20800, 21100, 20900, 21200, 21000, 21350, 21100, 21390], change: '+9.7%', positive: true,  label: 'in 3 months', labels: LABELS['3M'] },
-  'YTD': { data: [19500, 20100, 21800, 22400, 20900, 21390], change: '+9.7%', positive: true,  label: 'YTD', labels: LABELS['YTD'] },
-  '1Y':  { data: [14800, 16200, 15600, 17400, 18900, 19500, 18700, 20100, 21800, 22400, 20900, 21390], change: '+6.2%', positive: true,  label: 'this year', labels: LABELS['1Y'] },
+  '1D': { data: [21200, 21150, 21280, 21220, 21310, 21270, 21390], change: '+0.2%', positive: true, label: 'today', labels: LABELS['1D'] },
+  '1W': { data: [20900, 21100, 20950, 21200, 21350, 21280, 21390], change: '+2.3%', positive: true, label: 'this week', labels: LABELS['1W'] },
+  '1M': { data: [20500, 20600, 20400, 20750, 20900, 21100, 20800, 21200, 21000, 21300, 21150, 21390], change: '+4.3%', positive: true, label: 'this month', labels: LABELS['1M'] },
+  '3M': { data: [19500, 20100, 20400, 20200, 20800, 21100, 20900, 21200, 21000, 21350, 21100, 21390], change: '+9.7%', positive: true, label: 'in 3 months', labels: LABELS['3M'] },
+  'YTD': { data: [19500, 20100, 21800, 22400, 20900, 21390], change: '+9.7%', positive: true, label: 'YTD', labels: LABELS['YTD'] },
+  '1Y': { data: [14800, 16200, 15600, 17400, 18900, 19500, 18700, 20100, 21800, 22400, 20900, 21390], change: '+6.2%', positive: true, label: 'this year', labels: LABELS['1Y'] },
   'MAX': { data: [8200, 9500, 10200, 11800, 10900, 12400, 13100, 14800, 16200, 15600, 17400, 18900, 19500, 18700, 20100, 21800, 22400, 20900, 21390], change: '+160.9%', positive: true, label: 'all time', labels: LABELS['MAX'] },
 };
 
 const GOALS_PERIODS: Record<Period, PeriodMeta> = {
-  '1D':  { data: [71100, 71050, 71150, 71100, 71180, 71200], change: '+0.1%', positive: true,  label: 'today', labels: LABELS['1D'].slice(0, 6) },
-  '1W':  { data: [70200, 70400, 70600, 70800, 71000, 71100, 71200], change: '+1.4%', positive: true,  label: 'this week', labels: LABELS['1W'] },
-  '1M':  { data: [68000, 68500, 69000, 69200, 69800, 70200, 70600, 71200], change: '+4.7%', positive: true,  label: 'this month', labels: LABELS['1M'].slice(0, 8) },
-  '3M':  { data: [63000, 65000, 67000, 68000, 69200, 70200, 71200], change: '+13.0%', positive: true,  label: 'in 3 months', labels: LABELS['3M'].slice(0, 7) },
-  'YTD': { data: [55000, 60000, 64000, 67000, 69000, 71200], change: '+29.5%', positive: true,  label: 'YTD', labels: LABELS['YTD'] },
-  '1Y':  { data: [40600, 45000, 50000, 55000, 60000, 64000, 67000, 69000, 71200], change: '+75.4%', positive: true,  label: 'this year', labels: LABELS['1Y'].slice(0, 9) },
+  '1D': { data: [71100, 71050, 71150, 71100, 71180, 71200], change: '+0.1%', positive: true, label: 'today', labels: LABELS['1D'].slice(0, 6) },
+  '1W': { data: [70200, 70400, 70600, 70800, 71000, 71100, 71200], change: '+1.4%', positive: true, label: 'this week', labels: LABELS['1W'] },
+  '1M': { data: [68000, 68500, 69000, 69200, 69800, 70200, 70600, 71200], change: '+4.7%', positive: true, label: 'this month', labels: LABELS['1M'].slice(0, 8) },
+  '3M': { data: [63000, 65000, 67000, 68000, 69200, 70200, 71200], change: '+13.0%', positive: true, label: 'in 3 months', labels: LABELS['3M'].slice(0, 7) },
+  'YTD': { data: [55000, 60000, 64000, 67000, 69000, 71200], change: '+29.5%', positive: true, label: 'YTD', labels: LABELS['YTD'] },
+  '1Y': { data: [40600, 45000, 50000, 55000, 60000, 64000, 67000, 69000, 71200], change: '+75.4%', positive: true, label: 'this year', labels: LABELS['1Y'].slice(0, 9) },
   'MAX': { data: [20000, 28000, 35000, 40600, 45000, 50000, 55000, 60000, 64000, 67000, 69000, 71200], change: '+256%', positive: true, label: 'all time', labels: LABELS['MAX'].slice(0, 12) },
 };
 
@@ -173,7 +173,7 @@ function MiniLineChart({ data, labels: labelsProp }: { data: number[]; labels?: 
           </Svg>
         )}
         {activePoint && activeLabel !== undefined && activeValue !== undefined && (
-          <View pointerEvents="none" style={[s.tooltipCard, { left: tooltipLeft, top: tooltipTop }]}> 
+          <View pointerEvents="none" style={[s.tooltipCard, { left: tooltipLeft, top: tooltipTop }]}>
             <Text style={s.tooltipDate}>{activeLabel}</Text>
             <Text style={s.tooltipValue}>£{activeValue.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</Text>
             {changeAmount !== undefined && changePct !== undefined && (
@@ -226,7 +226,9 @@ const CONNECTED_SOURCES = [
   { id: '2', name: 'Moneybox', type: 'ISA / LISA', accounts: 1, color: '#00b4d8', icon: 'wallet-outline' },
 ];
 
-const GOALS = [
+type Goal = { id: string; name: string; target: number; current: number; deadline: string; icon: string; color: string };
+
+const INITIAL_GOALS: Goal[] = [
   { id: '1', name: 'Retirement at 60', target: 500000, current: 40600, deadline: '2044', icon: 'leaf-outline', color: '#22C55E' },
   { id: '2', name: 'Buy a property', target: 80000, current: 22400, deadline: '2028', icon: 'home-outline', color: '#00b4d8' },
   { id: '3', name: 'Education fund', target: 30000, current: 8200, deadline: '2031', icon: 'school-outline', color: '#AB47BC' },
@@ -511,18 +513,45 @@ function UploadTab() {
 // ─── Goals tab ───────────────────────────────────────────────────────────────
 
 function GoalsTab() {
+  const [goals, setGoals] = useState<Goal[]>(INITIAL_GOALS);
   const [showModal, setShowModal] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [name, setName] = useState('');
   const [target, setTarget] = useState('');
+  const [current, setCurrent] = useState('');
   const [deadline, setDeadline] = useState('');
   const [pickedColor, setPickedColor] = useState('#22C55E');
 
   const COLOR_OPTIONS = ['#22C55E', '#00b4d8', '#F59E0B', '#EF4444', '#AB47BC', '#42A5F5', '#FF7043', '#EC407A'];
 
-  const totalTargets = GOALS.reduce((s, g) => s + g.target, 0);
-  const totalProgress = GOALS.reduce((s, g) => s + g.current, 0);
+  const totalProgress = goals.reduce((s, g) => s + g.current, 0);
   const [period, setPeriod] = useState<Period>('1Y');
   const pd = GOALS_PERIODS[period];
+
+  const openNew = () => {
+    setEditingGoal(null);
+    setName(''); setTarget(''); setCurrent(''); setDeadline(''); setPickedColor('#22C55E');
+    setShowModal(true);
+  };
+
+  const openEdit = (g: Goal) => {
+    setEditingGoal(g);
+    setName(g.name); setTarget(String(g.target)); setCurrent(String(g.current)); setDeadline(g.deadline); setPickedColor(g.color);
+    setShowModal(true);
+  };
+
+  const handleSave = () => {
+    if (!name.trim() || !target.trim()) return;
+    const t = parseFloat(target) || 0;
+    const c = parseFloat(current) || 0;
+    if (editingGoal) {
+      setGoals((prev) => prev.map((g) => g.id === editingGoal.id ? { ...g, name: name.trim(), target: t, current: c, deadline: deadline.trim() || g.deadline, color: pickedColor } : g));
+    } else {
+      const icons = ['leaf-outline', 'home-outline', 'school-outline', 'car-outline', 'airplane-outline', 'heart-outline'];
+      setGoals((prev) => [...prev, { id: Date.now().toString(), name: name.trim(), target: t, current: c, deadline: deadline.trim() || '2030', icon: icons[prev.length % icons.length], color: pickedColor }]);
+    }
+    setShowModal(false);
+  };
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
@@ -539,12 +568,12 @@ function GoalsTab() {
 
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 20, marginTop: 16, marginBottom: 12 }}>
         <Text style={[s.sectionTitle, { marginTop: 0, marginHorizontal: 0, marginBottom: 0 }]}>Financial goals</Text>
-        <Pressable style={s.smallAddBtn} onPress={() => setShowModal(true)}>
+        <Pressable style={s.smallAddBtn} onPress={openNew}>
           <Ionicons name="add" size={16} color="#fff" />
         </Pressable>
       </View>
 
-      {GOALS.map((g) => {
+      {goals.map((g) => {
         const pct = Math.min((g.current / g.target) * 100, 100);
         const yearly = g.current / Math.max(1, 2025 - 2022);
         const yearsLeft = Math.max(0, parseInt(g.deadline) - 2025);
@@ -560,9 +589,12 @@ function GoalsTab() {
                 <Text style={s.goalName}>{g.name}</Text>
                 <Text style={s.goalDeadline}>Target: {g.deadline}</Text>
               </View>
-              <View style={{ alignItems: 'flex-end' }}>
+              <View style={{ alignItems: 'flex-end', gap: 4 }}>
                 <Text style={[s.goalSaved, { color: g.color }]}>£{g.current.toLocaleString('en-GB')}</Text>
                 <Text style={s.goalTarget}>of £{g.target.toLocaleString('en-GB')}</Text>
+                <Pressable onPress={() => openEdit(g)} style={{ marginTop: 2 }}>
+                  <Ionicons name="pencil-outline" size={14} color={C.textMuted} />
+                </Pressable>
               </View>
             </View>
             <View style={s.barWrap}>
@@ -580,18 +612,21 @@ function GoalsTab() {
         );
       })}
 
-      {/* Add goal modal */}
+      {/* Add / edit goal modal */}
       <Modal visible={showModal} animationType="slide" transparent onRequestClose={() => setShowModal(false)}>
         <Pressable style={s.overlay} onPress={() => setShowModal(false)}>
           <Pressable style={s.sheet}>
             <View style={s.handle} />
-            <Text style={s.sheetTitle}>New Financial Goal</Text>
+            <Text style={s.sheetTitle}>{editingGoal ? 'Edit Goal' : 'New Financial Goal'}</Text>
 
             <Text style={s.fieldLabel}>Goal name</Text>
             <TextInput style={s.input} placeholder="e.g. Retire at 60" placeholderTextColor={C.textMuted} value={name} onChangeText={setName} />
 
             <Text style={s.fieldLabel}>Target (£)</Text>
             <TextInput style={s.input} placeholder="500000" placeholderTextColor={C.textMuted} keyboardType="numeric" value={target} onChangeText={setTarget} />
+
+            <Text style={s.fieldLabel}>Saved so far (£)</Text>
+            <TextInput style={s.input} placeholder="0" placeholderTextColor={C.textMuted} keyboardType="numeric" value={current} onChangeText={setCurrent} />
 
             <Text style={s.fieldLabel}>Target year</Text>
             <TextInput style={s.input} placeholder="2044" placeholderTextColor={C.textMuted} keyboardType="numeric" value={deadline} onChangeText={setDeadline} />
@@ -605,8 +640,8 @@ function GoalsTab() {
               ))}
             </View>
 
-            <Pressable style={[s.saveBtn, (!name.trim() || !target.trim()) && { opacity: 0.4 }]} onPress={() => setShowModal(false)} disabled={!name.trim() || !target.trim()}>
-              <Text style={s.saveBtnText}>Create Goal</Text>
+            <Pressable style={[s.saveBtn, (!name.trim() || !target.trim()) && { opacity: 0.4 }]} onPress={handleSave} disabled={!name.trim() || !target.trim()}>
+              <Text style={s.saveBtnText}>{editingGoal ? 'Save Changes' : 'Create Goal'}</Text>
             </Pressable>
           </Pressable>
         </Pressable>

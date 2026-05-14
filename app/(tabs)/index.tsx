@@ -1,6 +1,7 @@
 import Logo from '@/app/components/Logo';
 import { CONNECTED_BANKS_KEY, ConnectedBank } from '@/app/connect-bank';
-import { C, COLOR_PALETTE, getCategoryColor } from '@/constants/theme';
+import { C, getCategoryColor } from '@/constants/theme';
+import { ColorPicker } from '@/app/components/ColorPicker';
 import { useAuth } from '@/context/auth';
 import { useOnboardingTarget } from '@/context/onboarding';
 import { CATEGORIES, runAgentCommand } from '@/services/categorizer';
@@ -509,15 +510,20 @@ export default function Index() {
 
             <Text style={s.sheetLabel}>Category</Text>
             <View style={s.pills}>
-              {CATEGORIES.filter((c) => c !== 'Other').map((cat) => (
-                <Pressable
-                  key={cat}
-                  style={[s.pill, !isCustomActive && activeCategory === cat && s.pillActive]}
-                  onPress={() => { setEditCategory(cat); setCustomCategory(''); }}
-                >
-                  <Text style={[s.pillText, !isCustomActive && activeCategory === cat && s.pillTextActive]}>{cat}</Text>
-                </Pressable>
-              ))}
+              {CATEGORIES.filter((c) => c !== 'Other').map((cat) => {
+                const catCol = getCategoryColor(cat, customColors);
+                const isChosen = !isCustomActive && activeCategory === cat;
+                return (
+                  <Pressable
+                    key={cat}
+                    style={[s.pill, isChosen && { backgroundColor: catCol + '25', borderColor: catCol }]}
+                    onPress={() => { setEditCategory(cat); setCustomCategory(''); }}
+                  >
+                    <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: catCol, marginRight: 3 }} />
+                    <Text style={[s.pillText, isChosen && { color: catCol, fontWeight: '600' }]}>{cat}</Text>
+                  </Pressable>
+                );
+              })}
             </View>
             <TextInput
               style={[s.customInput, isCustomActive && s.customInputActive]}
@@ -534,16 +540,7 @@ export default function Index() {
               <Ionicons name={showColorPicker ? 'chevron-up' : 'chevron-down'} size={14} color={C.textMuted} />
             </Pressable>
             {showColorPicker && (
-              <View style={s.colorGrid}>
-                {COLOR_PALETTE.map((col) => {
-                  const selected = catColor(activeCategory) === col;
-                  return (
-                    <Pressable key={col} onPress={() => handlePickColor(col)} style={[s.colorSwatch, { backgroundColor: col }, selected && s.colorSwatchSelected]}>
-                      {selected && <Ionicons name="checkmark" size={14} color="#fff" />}
-                    </Pressable>
-                  );
-                })}
-              </View>
+              <ColorPicker color={catColor(activeCategory)} onChange={handlePickColor} />
             )}
 
             {/* Save scope — single vs all */}
@@ -695,9 +692,6 @@ const s = StyleSheet.create({
   colorRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, marginBottom: 4 },
   colorDot: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: 'rgba(255,255,255,0.25)' },
   colorRowLabel: { flex: 1, fontSize: 13, fontWeight: '600', color: C.textSecondary },
-  colorGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
-  colorSwatch: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  colorSwatchSelected: { borderWidth: 3, borderColor: '#fff' },
 
   saveScopeRow: { flexDirection: 'row', gap: 10, marginBottom: 10 },
   saveScopeBtn: { flex: 1, alignItems: 'center', paddingVertical: 14, paddingHorizontal: 10, borderRadius: 14, borderWidth: 1.5, borderColor: C.brandBorder, backgroundColor: C.brandBg },

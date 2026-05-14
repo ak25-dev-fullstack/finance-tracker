@@ -22,7 +22,7 @@ import {
   type Transaction,
 } from '@/services/storage';
 import { categorize, CATEGORIES, normalizeKey, CategorizationResult } from '@/services/categorizer';
-import { C } from '@/constants/theme';
+import { C, getCategoryColor } from '@/constants/theme';
 
 export interface ConnectedBank {
   id: string;
@@ -102,6 +102,46 @@ function buildMockTransactions(bankId: BankId): ParsedRow[] {
   });
 }
 
+const MOCK_KNOWN_CATEGORIES: Record<string, string> = {
+  'tesco superstore':      'Groceries',
+  'tfl travel':            'Transport',
+  'salary - dwk ltd':      'Income',
+  'netflix':               'Subscriptions',
+  "sainsbury's":           'Groceries',
+  'sum up * grn mrkt':     'Groceries',
+  'deliveroo':             'Eating Out',
+  'british gas':           'Bills & Utilities',
+  'amazon prime':          'Subscriptions',
+  'costa coffee':          'Eating Out',
+  'transfer from savings': 'Transfers',
+  'boots':                 'Health',
+  'google *svcs':          'Subscriptions',
+  'uber':                  'Transport',
+  'spotify':               'Subscriptions',
+  'm&s food':              'Groceries',
+  'ee mobile':             'Bills & Utilities',
+  'hmrc tax refund':       'Income',
+  'waterstones':           'Shopping',
+  'vue cinema':            'Entertainment',
+  'bacs credit ax8812':    'Income',
+};
+
+const UNKNOWN_TXNS = [
+  { desc: 'POS TXN REF-8A2F94',  amount: 31.00, daysAgo: 4  },
+  { desc: 'REF 00918-XB',         amount: 44.99, daysAgo: 12 },
+  { desc: 'CARD PMT 002819-B',    amount: 22.50, daysAgo: 19 },
+  { desc: 'FASTER PMT 007231',    amount: 90.00, daysAgo: 27 },
+] as const;
+
+function buildUnknownTransactions(bankId: BankId): ParsedRow[] {
+  const now = new Date();
+  return UNKNOWN_TXNS.map((r, i) => {
+    const d = new Date(now);
+    d.setDate(d.getDate() - r.daysAgo);
+    return { id: `${bankId}-unknown-${i}`, date: d.toISOString().slice(0, 10), amount: r.amount, description: r.desc, type: 'expense' as const };
+  });
+}
+
 export const CONNECTED_BANKS_KEY = 'connected_banks';
 
 const HEADER_TITLES: Record<Step, string> = {
@@ -151,23 +191,32 @@ export default function ConnectBank() {
     setSyncState((p) => ({ ...p, [bank.id]: 'syncing' }));
     try {
       const rows = buildMockTransactions(bank.id as BankId);
+      const unknownRows = buildUnknownTransactions(bank.id as BankId);
+      const allRows = [...rows, ...unknownRows];
+      const unknownIds = new Set(unknownRows.map((r) => r.id));
       const memory = await loadCategoryMemory();
       let cats: CategorizationResult[];
       try {
-        cats = await categorize(rows.map((r) => ({ id: r.id, description: r.description, amount: r.amount, type: r.type })), memory);
+        cats = await categorize(allRows.map((r) => ({ id: r.id, description: r.description, amount: r.amount, type: r.type })), memory);
       } catch {
-        cats = rows.map((r) => ({ id: r.id, category: 'Other', confidence: 'high' as const, fromMemory: false }));
+        cats = allRows.map((r) => {
+          const memCat = memory[normalizeKey(r.description)];
+          if (memCat) return { id: r.id, category: memCat, confidence: 'high' as const, fromMemory: true };
+          const knownCat = MOCK_KNOWN_CATEGORIES[normalizeKey(r.description)];
+          return { id: r.id, category: knownCat ?? 'Other', confidence: 'high' as const, fromMemory: false };
+        });
       }
+      cats = cats.map((c) => unknownIds.has(c.id) ? { id: c.id, category: 'Other', confidence: 'low' as const, fromMemory: false } : c);
       const importId = `${bank.id}-sync-${Date.now()}`;
       const memoryUpdates: Record<string, string> = {};
-      const transactions: Transaction[] = rows.map((row) => {
+      const transactions: Transaction[] = allRows.map((row) => {
         const category = cats.find((c) => c.id === row.id)?.category ?? 'Other';
-        memoryUpdates[normalizeKey(row.description)] = category;
+        if (!unknownIds.has(row.id)) memoryUpdates[normalizeKey(row.description)] = category;
         return { id: row.id, date: row.date, amount: row.amount, category, description: row.description, type: row.type, source: 'monzo' as const, importId };
       });
       await appendTransactions(transactions);
       await updateCategoryMemory(memoryUpdates);
-      await saveImportBatch({ id: importId, fileName: `${bank.name} sync`, date: new Date().toISOString(), count: rows.length });
+      await saveImportBatch({ id: importId, fileName: `${bank.name} sync`, date: new Date().toISOString(), count: allRows.length });
       const account = MOCK_ACCOUNT[bank.id as BankId];
       const newBank: ConnectedBank = { id: bank.id, name: bank.name, color: bank.color, ...account, connectedAt: new Date().toISOString() };
       const updated = [...connectedBanks.filter((b) => b.id !== bank.id), newBank];
@@ -186,17 +235,39 @@ export default function ConnectBank() {
     setSelectedBank(bank);
     setStep('categorizing');
     try {
-      const rows = buildMockTransactions(bank.id as BankId);
+      const knownRows = buildMockTransactions(bank.id as BankId);
+      const unknownRows = buildUnknownTransactions(bank.id as BankId);
+      const rows = [...knownRows, ...unknownRows];
+      const unknownIds = new Set(unknownRows.map((r) => r.id));
       const memory = await loadCategoryMemory();
-      const cats = await categorize(rows.map((r) => ({ id: r.id, description: r.description, amount: r.amount, type: r.type })), memory);
+      let cats: CategorizationResult[];
+      try {
+        cats = await categorize(
+          rows.map((r) => ({ id: r.id, description: r.description, amount: r.amount, type: r.type })),
+          memory
+        );
+      } catch {
+        // API unavailable — use category memory first, then built-in merchant lookup, then flag for review
+        cats = rows.map((r) => {
+          const memCat = memory[normalizeKey(r.description)];
+          if (memCat) return { id: r.id, category: memCat, confidence: 'high' as const, fromMemory: true };
+          const knownCat = MOCK_KNOWN_CATEGORIES[normalizeKey(r.description)];
+          if (knownCat) return { id: r.id, category: knownCat, confidence: 'high' as const, fromMemory: false };
+          return { id: r.id, category: 'Other', confidence: 'low' as const, fromMemory: false };
+        });
+      }
+      // Always force the dedicated unknown transactions into the review step
+      cats = cats.map((c) =>
+        unknownIds.has(c.id) ? { id: c.id, category: 'Other', confidence: 'low' as const, fromMemory: false } : c
+      );
       setParsed(rows);
       setResults(cats);
       setUserChoices({});
       setCustomInputs({});
       setStep('review');
     } catch {
-      Alert.alert('Categorisation failed', 'Check your connection and try again.');
-      setStep(selectedBank ? 'success' : 'select');
+      Alert.alert('Sync failed', 'Could not load transactions. Please try again.');
+      setStep('select');
     }
   };
 
@@ -316,19 +387,11 @@ export default function ConnectBank() {
                   <View style={{ alignItems: 'flex-end', gap: 6 }}>
                     <Text style={[s.connectedBalance, { color: C.income }]}>£{b.balance.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</Text>
                     <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-                      {bankDef && (() => {
-                        const ss = syncState[b.id];
-                        return (
-                          <Pressable onPress={() => handleSync(bankDef)} disabled={ss === 'syncing'}>
-                            {ss === 'syncing'
-                              ? <ActivityIndicator size="small" color={b.color} />
-                              : <Text style={[s.disconnectText, { color: ss === 'synced' ? C.income : b.color }]}>
-                                  {ss === 'synced' ? 'Synced ✓' : 'Sync'}
-                                </Text>
-                            }
-                          </Pressable>
-                        );
-                      })()}
+                      {bankDef && (
+                        <Pressable onPress={() => handleSync(bankDef)}>
+                          <Text style={[s.disconnectText, { color: b.color }]}>Sync</Text>
+                        </Pressable>
+                      )}
                       <Pressable onPress={() => handleDisconnect(b.id)}>
                         <Text style={s.disconnectText}>Disconnect</Text>
                       </Pressable>
@@ -454,23 +517,10 @@ export default function ConnectBank() {
               </Text>
             </View>
           </View>
-          {(() => {
-            const ss = selectedBank ? syncState[selectedBank.id] : undefined;
-            return (
-              <Pressable
-                style={[s.primaryBtn, ss === 'synced' && { backgroundColor: C.income }, ss === 'syncing' && { opacity: 0.7 }]}
-                onPress={() => selectedBank && handleSync(selectedBank)}
-                disabled={ss === 'syncing'}
-              >
-                {ss === 'syncing'
-                  ? <ActivityIndicator color="#fff" size="small" />
-                  : ss === 'synced'
-                  ? <><Ionicons name="checkmark-circle" size={18} color="#fff" /><Text style={s.primaryBtnText}>Transactions synced</Text></>
-                  : <><Ionicons name="sync-outline" size={18} color="#fff" /><Text style={s.primaryBtnText}>Sync Transactions</Text></>
-                }
-              </Pressable>
-            );
-          })()}
+          <Pressable style={s.primaryBtn} onPress={() => selectedBank && handleSync(selectedBank)}>
+            <Ionicons name="sync-outline" size={18} color="#fff" />
+            <Text style={s.primaryBtnText}>Sync Transactions</Text>
+          </Pressable>
           <Pressable style={s.ghostBtn} onPress={() => router.back()}>
             <Text style={s.ghostBtnText}>Done for now</Text>
           </Pressable>
@@ -570,15 +620,20 @@ export default function ConnectBank() {
                     </View>
                     <Text style={s.reviewPrompt}>What is this?</Text>
                     <View style={s.pills}>
-                      {CATEGORIES.filter((c) => c !== 'Other').map((cat) => (
-                        <Pressable
-                          key={cat}
-                          style={[s.pill, !isCustomActive && chosen === cat && s.pillActive]}
-                          onPress={() => setGroupChoice(description, cat)}
-                        >
-                          <Text style={[s.pillText, !isCustomActive && chosen === cat && s.pillTextActive]}>{cat}</Text>
-                        </Pressable>
-                      ))}
+                      {CATEGORIES.filter((c) => c !== 'Other').map((cat) => {
+                        const catCol = getCategoryColor(cat);
+                        const isChosen = !isCustomActive && chosen === cat;
+                        return (
+                          <Pressable
+                            key={cat}
+                            style={[s.pill, isChosen && { backgroundColor: catCol + '25', borderColor: catCol }]}
+                            onPress={() => setGroupChoice(description, cat)}
+                          >
+                            <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: catCol, marginRight: 3 }} />
+                            <Text style={[s.pillText, isChosen && { color: catCol, fontWeight: '600' }]}>{cat}</Text>
+                          </Pressable>
+                        );
+                      })}
                     </View>
                     <TextInput
                       style={[s.customInput, isCustomActive && s.customInputActive]}

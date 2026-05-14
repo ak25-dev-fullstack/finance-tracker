@@ -5,10 +5,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+    Modal,
     Pressable,
     ScrollView,
     StyleSheet,
     Text,
+    TextInput,
     View,
 } from 'react-native';
 
@@ -22,7 +24,9 @@ const LOANS = [
   { id: '2', name: 'Car Finance', lender: 'Black Horse', balance: 8750, monthly: 245, rate: 5.4, due: 'Mar 2028' },
 ];
 
-const DEBTS = [
+type Debt = { id: string; name: string; issuer: string; balance: number; limit: number; rate: number };
+
+const INITIAL_DEBTS: Debt[] = [
   { id: '1', name: 'Visa Credit Card', issuer: 'HSBC', balance: 1340, limit: 5000, rate: 22.9 },
   { id: '2', name: 'Mastercard', issuer: 'Lloyds', balance: 680, limit: 3000, rate: 19.9 },
 ];
@@ -60,11 +64,32 @@ function scoreLabel(score: number) {
 export default function CreditScreen() {
   const router = useRouter();
   const [section, setSection] = useState<Section>('overview');
+  const [debts, setDebts] = useState<Debt[]>(INITIAL_DEBTS);
+  const [showAddCard, setShowAddCard] = useState(false);
+  const [cardName, setCardName] = useState('');
+  const [cardIssuer, setCardIssuer] = useState('');
+  const [cardBalance, setCardBalance] = useState('');
+  const [cardLimit, setCardLimit] = useState('');
+  const [cardRate, setCardRate] = useState('');
   const scoreCardRef = useOnboardingTarget('credit_score');
   const sectionTabsRef = useOnboardingTarget('credit_sections');
 
-  const totalDebt = LOANS.reduce((s, l) => s + l.balance, 0) + DEBTS.reduce((s, d) => s + d.balance, 0) + MORTGAGE.remaining;
+  const totalDebt = LOANS.reduce((s, l) => s + l.balance, 0) + debts.reduce((s, d) => s + d.balance, 0) + MORTGAGE.remaining;
   const totalPension = PENSIONS.reduce((s, p) => s + p.value, 0);
+
+  const handleAddCard = () => {
+    if (!cardName.trim() || !cardBalance.trim() || !cardLimit.trim()) return;
+    setDebts((prev) => [...prev, {
+      id: Date.now().toString(),
+      name: cardName.trim(),
+      issuer: cardIssuer.trim() || 'Unknown',
+      balance: parseFloat(cardBalance) || 0,
+      limit: parseFloat(cardLimit) || 0,
+      rate: parseFloat(cardRate) || 0,
+    }]);
+    setCardName(''); setCardIssuer(''); setCardBalance(''); setCardLimit(''); setCardRate('');
+    setShowAddCard(false);
+  };
 
   return (
     <View style={s.container}>
@@ -125,9 +150,15 @@ export default function CreditScreen() {
         {/* Overview */}
         {section === 'overview' && (
           <>
-            <Text style={s.sectionTitle}>Credit Cards</Text>
-            {DEBTS.map((d) => {
-              const util = (d.balance / d.limit) * 100;
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 20, marginTop: 16, marginBottom: 4 }}>
+              <Text style={[s.sectionTitle, { marginTop: 0, marginHorizontal: 0, marginBottom: 0 }]}>Credit Cards</Text>
+              <Pressable style={s.addCardBtn} onPress={() => setShowAddCard(true)}>
+                <Ionicons name="add" size={14} color="#fff" />
+                <Text style={s.addCardBtnText}>Add card</Text>
+              </Pressable>
+            </View>
+            {debts.map((d) => {
+              const util = d.limit > 0 ? (d.balance / d.limit) * 100 : 0;
               return (
                 <View key={d.id} style={s.itemCard}>
                   <View style={s.itemTop}>
@@ -136,7 +167,7 @@ export default function CreditScreen() {
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={s.itemName}>{d.name}</Text>
-                      <Text style={s.itemSub}>{d.issuer} · {d.rate}% APR</Text>
+                      <Text style={s.itemSub}>{d.issuer}{d.rate > 0 ? ` · ${d.rate}% APR` : ''}</Text>
                     </View>
                     <View style={s.itemRight}>
                       <Text style={s.itemBal}>£{d.balance.toLocaleString('en-GB')}</Text>
@@ -152,6 +183,39 @@ export default function CreditScreen() {
                 </View>
               );
             })}
+
+            {/* Add card modal */}
+            <Modal visible={showAddCard} animationType="slide" transparent onRequestClose={() => setShowAddCard(false)}>
+              <Pressable style={s.overlay} onPress={() => setShowAddCard(false)}>
+                <Pressable style={s.sheet}>
+                  <View style={s.handle} />
+                  <Text style={s.sheetTitle}>Add Credit Card</Text>
+
+                  <Text style={s.fieldLabel}>Card name</Text>
+                  <TextInput style={s.input} placeholder="e.g. Visa Credit Card" placeholderTextColor={C.textMuted} value={cardName} onChangeText={setCardName} />
+
+                  <Text style={s.fieldLabel}>Issuer / bank</Text>
+                  <TextInput style={s.input} placeholder="e.g. HSBC" placeholderTextColor={C.textMuted} value={cardIssuer} onChangeText={setCardIssuer} />
+
+                  <Text style={s.fieldLabel}>Current balance (£)</Text>
+                  <TextInput style={s.input} placeholder="0.00" placeholderTextColor={C.textMuted} keyboardType="numeric" value={cardBalance} onChangeText={setCardBalance} />
+
+                  <Text style={s.fieldLabel}>Credit limit (£)</Text>
+                  <TextInput style={s.input} placeholder="5000" placeholderTextColor={C.textMuted} keyboardType="numeric" value={cardLimit} onChangeText={setCardLimit} />
+
+                  <Text style={s.fieldLabel}>APR (%)</Text>
+                  <TextInput style={s.input} placeholder="22.9" placeholderTextColor={C.textMuted} keyboardType="numeric" value={cardRate} onChangeText={setCardRate} />
+
+                  <Pressable
+                    style={[s.saveBtn, (!cardName.trim() || !cardBalance.trim() || !cardLimit.trim()) && { opacity: 0.4 }]}
+                    onPress={handleAddCard}
+                    disabled={!cardName.trim() || !cardBalance.trim() || !cardLimit.trim()}
+                  >
+                    <Text style={s.saveBtnText}>Add Card</Text>
+                  </Pressable>
+                </Pressable>
+              </Pressable>
+            </Modal>
           </>
         )}
 
@@ -353,4 +417,15 @@ const s = StyleSheet.create({
   adviserCardSub: { fontSize: 12, color: C.textMuted, marginTop: 2 },
   adviserBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: C.brand, borderRadius: 12, paddingVertical: 12 },
   adviserBtnText: { fontSize: 14, fontWeight: '600', color: '#fff' },
+
+  addCardBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, backgroundColor: C.brand },
+  addCardBtnText: { fontSize: 12, fontWeight: '600', color: '#fff' },
+  fieldLabel: { fontSize: 11, fontWeight: '600', color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+  sheet: { backgroundColor: C.card, borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: 48 },
+  handle: { width: 40, height: 4, backgroundColor: C.border, borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
+  sheetTitle: { fontSize: 18, fontWeight: '700', color: C.textPrimary, marginBottom: 18 },
+  input: { backgroundColor: C.bg, borderWidth: 1.5, borderColor: C.border, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, fontSize: 14, color: C.textPrimary, marginBottom: 16 },
+  saveBtn: { backgroundColor: C.brand, borderRadius: 14, paddingVertical: 15, alignItems: 'center' },
+  saveBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
 });

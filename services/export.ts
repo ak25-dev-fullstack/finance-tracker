@@ -124,6 +124,34 @@ export function exportTransactionsPdf(transactions: Transaction[]) {
     </body></html>`);
 }
 
+// ─── Adviser history report ───────────────────────────────────────────────────
+
+export function exportAdviserSummaryPdf(entry: { date: string; author: string; content: string }) {
+  if (Platform.OS !== 'web') {
+    Alert.alert('Web only', 'Open the web app to export files.');
+    return;
+  }
+  openPrint(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+    <title>Adviser Summary — DWK Finance</title>
+    <style>${BASE_CSS}
+      .summary-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:20px; margin-top:16px; }
+      .author { font-weight:700; font-size:14px; color:#1e293b; margin-bottom:2px; }
+      .date-line { font-size:11px; color:#64748b; margin-bottom:14px; }
+      .body { font-size:13px; color:#334155; line-height:1.7; }
+    </style></head><body>
+    <h1>DWK Finance</h1>
+    <div class="sub">Adviser Consultation Summary &nbsp;·&nbsp; Generated ${longDate()}</div>
+    <hr class="divider">
+    <div class="summary-box">
+      <div class="author">${entry.author}</div>
+      <div class="date-line">${entry.date}</div>
+      <div class="body">${entry.content.replace(/\n/g, '<br>')}</div>
+    </div>
+    <div class="footer">DWK Finance &nbsp;·&nbsp; Confidential &nbsp;·&nbsp; ${new Date().toISOString()}</div>
+    <script>window.onload=()=>window.print();</script>
+    </body></html>`);
+}
+
 // ─── Insights report ──────────────────────────────────────────────────────────
 
 export function exportInsightsCsv(

@@ -1,8 +1,25 @@
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { AuthProvider } from '@/context/auth';
+import { useEffect } from 'react';
+import { AuthProvider, useAuth } from '@/context/auth';
 
 function RootLayoutNav() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const segments = useSegments();
+
+  useEffect(() => {
+    if (loading) return;
+    const seg0 = segments[0] as string;
+    const inLogin = seg0 === 'login';
+    const inRegister = seg0 === 'register';
+    if (!user && !inLogin && !inRegister) {
+      router.replace('/login');
+    } else if (user && (inLogin || inRegister)) {
+      router.replace('/(tabs)');
+    }
+  }, [user, loading, segments]);
+
   return (
     <>
       <StatusBar style="light" />

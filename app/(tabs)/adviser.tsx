@@ -1,5 +1,6 @@
 import { C } from '@/constants/theme';
 import { useOnboardingTarget } from '@/context/onboarding';
+import { exportAdviserSummaryPdf } from '@/services/export';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
@@ -272,7 +273,7 @@ export default function AdviserScreen() {
             {HISTORY.map((entry) => {
               const meta = HISTORY_TYPE_META[entry.type];
               return (
-                <View key={entry.id} style={[s.historyEntry, { borderLeftColor: meta.color }]}> 
+                <View key={entry.id} style={[s.historyEntry, { borderLeftColor: meta.color }]}>
                   <View style={s.historyHeader}>
                     <View style={[s.historyIconWrap, { backgroundColor: meta.color + '22' }]}>
                       <Ionicons name={meta.icon as any} size={14} color={meta.color} />
@@ -282,6 +283,12 @@ export default function AdviserScreen() {
                   </View>
                   <Text style={s.historyAuthor}>{entry.author === 'You' ? 'You' : entry.author}</Text>
                   <Text style={s.historyContent}>{entry.content}</Text>
+                  {entry.type === 'consultation_completed' && (
+                    <Pressable style={s.pdfBtn} onPress={() => exportAdviserSummaryPdf({ date: entry.date, author: entry.author, content: entry.content })}>
+                      <Ionicons name="document-text-outline" size={14} color={C.brandLight} />
+                      <Text style={s.pdfBtnText}>Download PDF</Text>
+                    </Pressable>
+                  )}
                 </View>
               );
             })}
@@ -351,4 +358,6 @@ const s = StyleSheet.create({
   historyDate: { fontSize: 11, color: C.textMuted },
   historyAuthor: { fontSize: 13, fontWeight: '600', color: C.textPrimary, marginBottom: 4 },
   historyContent: { fontSize: 13, color: C.textSecondary, lineHeight: 20 },
+  pdfBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginTop: 10, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: C.brandBorder, backgroundColor: C.brandBg },
+  pdfBtnText: { fontSize: 12, fontWeight: '600', color: C.brandLight },
 });

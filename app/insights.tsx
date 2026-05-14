@@ -10,7 +10,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Path, Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { useFocusEffect } from '@react-navigation/native';
 import { loadTransactions, renameCategory, loadCustomCategoryColors, Transaction } from '@/services/storage';
 import { generateInsights } from '@/services/categorizer';
@@ -110,12 +110,104 @@ const bs = StyleSheet.create({
   val: { fontSize: 9, color: C.textSecondary, marginBottom: 4, fontWeight: '500' },
 });
 
+function HorizontalBarChart({ data }: { data: { label: string; value: number; color: string }[] }) {
+  const max = Math.max(...data.map((d) => d.value), 1);
+  return (
+    <View style={{ gap: 12, paddingVertical: 8 }}>
+      {data.map((d) => (
+        <View key={d.label} style={{ gap: 5 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: d.color }} />
+              <Text style={{ fontSize: 12, color: C.textSecondary, fontWeight: '500' }}>{d.label}</Text>
+            </View>
+            <Text style={{ fontSize: 12, color: C.textPrimary, fontWeight: '600' }}>£{d.value.toFixed(2)}</Text>
+          </View>
+          <View style={{ height: 8, backgroundColor: C.border, borderRadius: 4, overflow: 'hidden' }}>
+            <View style={{ height: '100%', width: `${(d.value / max) * 100}%` as any, backgroundColor: d.color, borderRadius: 4 }} />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function TrendLineChart({ expenses }: { expenses: import('@/services/storage').Transaction[] }) {
+  const [svgWidth, setSvgWidth] = useState(0);
+  const HEIGHT = 120;
+  const YPAD = 40;
+
+  const anchor = useMemo(() => {
+    if (expenses.length === 0) return new Date();
+    return new Date(Math.max(...expenses.map((t) => new Date(t.date + 'T00:00:00').getTime())));
+  }, [expenses]);
+
+  const days = useMemo(() => Array.from({ length: 30 }, (_, i) => {
+    const d = new Date(anchor);
+    d.setDate(d.getDate() - (29 - i));
+    const ds = d.toISOString().slice(0, 10);
+    return {
+      ds,
+      total: expenses.filter((t) => t.date === ds).reduce((s, t) => s + t.amount, 0),
+      label: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+    };
+  }), [expenses, anchor]);
+
+  const max = Math.max(...days.map((d) => d.total), 1);
+  const yPos = (v: number) => 8 + (1 - v / max) * (HEIGHT - 32);
+  const xPos = (i: number) => (i / 29) * svgWidth;
+
+  const pts = days.map((d, i) => ({ x: xPos(i), y: yPos(d.total) }));
+  const line = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const area = `${line} L${pts[29].x.toFixed(1)},${(HEIGHT - 24).toFixed(1)} L0,${(HEIGHT - 24).toFixed(1)} Z`;
+  const gridYs = [8, 8 + (HEIGHT - 32) / 2, HEIGHT - 24];
+  const xLabelIdx = [0, 9, 19, 29];
+
+  return (
+    <View style={{ marginTop: 4 }}>
+      <View style={{ flexDirection: 'row' }}>
+        <View style={{ width: YPAD, height: HEIGHT, justifyContent: 'space-between', paddingVertical: 4, paddingRight: 4 }}>
+          {[max, max / 2, 0].map((v, i) => (
+            <Text key={i} style={{ fontSize: 9, color: C.textMuted, textAlign: 'right' }}>
+              {v >= 1000 ? `£${(v / 1000).toFixed(1)}k` : `£${v.toFixed(0)}`}
+            </Text>
+          ))}
+        </View>
+        <View style={{ flex: 1 }} onLayout={(e) => setSvgWidth(e.nativeEvent.layout.width)}>
+          {svgWidth > 0 && (
+            <Svg width={svgWidth} height={HEIGHT}>
+              <Defs>
+                <LinearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
+                  <Stop offset="0" stopColor={C.brand} stopOpacity="0.25" />
+                  <Stop offset="1" stopColor={C.brand} stopOpacity="0" />
+                </LinearGradient>
+              </Defs>
+              {gridYs.map((y, i) => (
+                <Path key={i} d={`M0,${y} L${svgWidth},${y}`} stroke={C.border} strokeWidth="1" strokeDasharray="3,4" />
+              ))}
+              <Path d={area} fill="url(#trendGrad)" />
+              <Path d={line} stroke={C.brand} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            </Svg>
+          )}
+        </View>
+      </View>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingLeft: YPAD, marginTop: 4 }}>
+        {xLabelIdx.map((i) => (
+          <Text key={i} style={{ fontSize: 9, color: C.textMuted }}>{days[i].label}</Text>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 type Mode = 'category' | 'week' | 'day' | 'month';
+type ChartType = 'donut' | 'hbar' | 'line';
 type FilterMode = 'all' | 'week' | 'day' | 'month' | 'custom';
 
 export default function Insights() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [mode, setMode] = useState<Mode>('category');
+  const [chartType, setChartType] = useState<ChartType>('donut');
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedWeek, setSelectedWeek] = useState('');
@@ -336,10 +428,37 @@ export default function Insights() {
                     </View>
                   )}
 
-                  <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-                    <PieChart data={categoryData} />
-                    <Text style={s.chartTotal}>£{totalFiltered.toFixed(2)} · {filterLabel}</Text>
+                  <View style={s.chartTypeSel}>
+                    {([
+                      ['donut', 'pie-chart-outline', 'Donut'],
+                      ['hbar',  'bar-chart-outline',  'Bars'],
+                      ['line',  'trending-up-outline', 'Trend'],
+                    ] as [ChartType, string, string][]).map(([ct, icon, label]) => (
+                      <Pressable key={ct} style={[s.chartTypeBtn, chartType === ct && s.chartTypeBtnActive]} onPress={() => setChartType(ct)}>
+                        <Ionicons name={icon as any} size={13} color={chartType === ct ? '#fff' : C.textMuted} />
+                        <Text style={[s.chartTypeBtnText, chartType === ct && { color: '#fff' }]}>{label}</Text>
+                      </Pressable>
+                    ))}
                   </View>
+
+                  {chartType === 'donut' && (
+                    <View style={{ alignItems: 'center', paddingVertical: 12 }}>
+                      <PieChart data={categoryData} />
+                      <Text style={s.chartTotal}>£{totalFiltered.toFixed(2)} · {filterLabel}</Text>
+                    </View>
+                  )}
+                  {chartType === 'hbar' && (
+                    <View style={{ paddingVertical: 12 }}>
+                      <HorizontalBarChart data={categoryData} />
+                      <Text style={[s.chartTotal, { textAlign: 'center', marginTop: 8 }]}>£{totalFiltered.toFixed(2)} · {filterLabel}</Text>
+                    </View>
+                  )}
+                  {chartType === 'line' && (
+                    <View style={{ paddingVertical: 12 }}>
+                      <TrendLineChart expenses={filteredExpenses} />
+                      <Text style={[s.chartTotal, { textAlign: 'center', marginTop: 8 }]}>30-day trend · {filterLabel}</Text>
+                    </View>
+                  )}
 
                   {categoryData.map((d) => {
                     const isExpanded = expandedCategory === d.label;
@@ -348,7 +467,7 @@ export default function Insights() {
 
                     return (
                       <View key={d.label}>
-                        <Pressable style={s.legendRow} onPress={() => { setExpandedCategory(isExpanded ? null : d.label); if (isRenaming) setRenamingCategory(null); }} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={`${d.label}, £${d.value.toFixed(2)}, ${totalFiltered > 0 ? ((d.value / totalFiltered) * 100).toFixed(0) : 0} percent of total`} accessibilityHint={isExpanded ? 'Collapse transactions' : 'Expand transactions'} accessibilityState={{ expanded: isExpanded }}>
+                        <Pressable style={s.legendRow} onPress={() => { setExpandedCategory(isExpanded ? null : d.label); if (isRenaming) setRenamingCategory(null); }} accessibilityRole="button" accessibilityLabel={`${d.label}, £${d.value.toFixed(2)}, ${totalFiltered > 0 ? ((d.value / totalFiltered) * 100).toFixed(0) : 0} percent of total`} accessibilityHint={isExpanded ? 'Collapse transactions' : 'Expand transactions'} accessibilityState={{ expanded: isExpanded }}>
                           <View style={[s.dot, { backgroundColor: d.color }]} accessibilityElementsHidden />
                           <Text style={s.legendLabel} importantForAccessibility="no">{d.label}</Text>
                           <Text style={s.legendAmt} importantForAccessibility="no">£{d.value.toFixed(2)}</Text>
@@ -499,6 +618,11 @@ const s = StyleSheet.create({
   customLabel: { fontSize: 11, fontWeight: '600', color: C.textMuted, textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 4 },
   customInput: { borderWidth: 1.5, borderColor: C.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9, fontSize: 14, color: C.textPrimary, backgroundColor: C.bg },
   customArrow: { fontSize: 18, color: C.textMuted, marginTop: 16 },
+
+  chartTypeSel: { flexDirection: 'row', gap: 8, justifyContent: 'center', marginTop: 8, marginBottom: 4 },
+  chartTypeBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16, borderWidth: 1.5, borderColor: C.border, backgroundColor: C.bg },
+  chartTypeBtnActive: { backgroundColor: C.brand, borderColor: C.brand },
+  chartTypeBtnText: { fontSize: 12, fontWeight: '500', color: C.textMuted },
 
   chartTotal: { fontSize: 13, color: C.textMuted, marginTop: 10, fontWeight: '500' },
 

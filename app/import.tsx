@@ -27,7 +27,7 @@ import {
   type Transaction,
 } from '@/services/storage';
 import { categorize, CATEGORIES, normalizeKey, CategorizationResult } from '@/services/categorizer';
-import { C } from '@/constants/theme';
+import { C, getCategoryColor } from '@/constants/theme';
 
 interface ParsedRow {
   id: string;
@@ -395,15 +395,20 @@ export default function Import() {
                       </View>
                       <Text style={s.reviewPrompt}>What is this?</Text>
                       <View style={s.pills}>
-                        {CATEGORIES.filter((c) => c !== 'Other').map((cat) => (
-                          <Pressable
-                            key={cat}
-                            style={[s.pill, !isCustomActive && chosen === cat && s.pillActive]}
-                            onPress={() => setGroupChoice(description, cat)}
-                          >
-                            <Text style={[s.pillText, !isCustomActive && chosen === cat && s.pillTextActive]}>{cat}</Text>
-                          </Pressable>
-                        ))}
+                        {CATEGORIES.filter((c) => c !== 'Other').map((cat) => {
+                          const catCol = getCategoryColor(cat);
+                          const isChosen = !isCustomActive && chosen === cat;
+                          return (
+                            <Pressable
+                              key={cat}
+                              style={[s.pill, isChosen && { backgroundColor: catCol + '25', borderColor: catCol }]}
+                              onPress={() => setGroupChoice(description, cat)}
+                            >
+                              <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: catCol, marginRight: 3 }} />
+                              <Text style={[s.pillText, isChosen && { color: catCol, fontWeight: '600' }]}>{cat}</Text>
+                            </Pressable>
+                          );
+                        })}
                       </View>
                       <TextInput
                         style={[s.customInput, isCustomActive && s.customInputActive]}
